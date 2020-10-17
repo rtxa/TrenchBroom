@@ -20,6 +20,8 @@
 #include "ModelUtils.h"
 
 #include "Ensure.h"
+#include "Polyhedron.h"
+#include "Model/Brush.h"
 #include "Model/BrushNode.h"
 #include "Model/CollectNodesVisitor.h"
 #include "Model/GroupNode.h"
@@ -100,6 +102,33 @@ namespace TrenchBroom {
                 });
             }
             return builder.initialized() ? builder.bounds() : defaultBounds;
+        }
+
+        bool boundsContainNode(const vm::bbox3& bounds, const Node* node) {
+            return node->acceptLambda(kdl::overload {
+                [] (const WorldNode*)         { return false; },
+                [] (const LayerNode*)         { return false; },
+                [&](const GroupNode* group)   { return bounds.contains(group->logicalBounds()); },
+                [&](const EntityNode* entity) { return bounds.contains(entity->logicalBounds()); },
+                [&](const BrushNode* brush)   { return bounds.contains(brush->logicalBounds()); },
+            });
+        }
+
+        bool boundsIntersectNode(const vm::bbox3& bounds, const Node* node) {
+            return node->acceptLambda(kdl::overload {
+                [] (const WorldNode*)         { return false; },
+                [] (const LayerNode*)         { return false; },
+                [&](const GroupNode* group)   { return bounds.contains(group->logicalBounds()); },
+                [&](const EntityNode* entity) { return bounds.contains(entity->logicalBounds()); },
+                [&](const BrushNode* brush)   { 
+                    for (const auto* vertex : brush->brush().vertices()) {
+                        if (bounds.contains(vertex->position())) {
+                            return true;
+                        }
+                    }
+                    return false;
+                 },
+            });
         }
     }
 }
