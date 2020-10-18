@@ -22,6 +22,7 @@
 
 #include "FloatType.h"
 #include "Model/IssueType.h"
+#include "Model/NodeVisitor.h"
 #include "Model/Tag.h"
 
 #include <vecmath/forward.h>
@@ -394,6 +395,34 @@ namespace TrenchBroom {
                 while (cur != end && !visitor.cancelled()) {
                     (*cur)->accept(visitor);
                     ++cur;
+                }
+            }
+
+            template <typename L>
+            auto acceptLambda(const L& lambda) {
+                NodeLambdaVisitor<L> visitor(lambda);
+                doAccept(visitor);
+                return visitor.result();
+            }
+
+            template <typename L>
+            auto acceptLambda(const L& lambda) const {
+                ConstNodeLambdaVisitor<L> visitor(lambda);
+                doAccept(visitor);
+                return visitor.result();
+            }
+
+            template <typename L>
+            void visitChildren(const L& lambda) {
+                for (auto* child : m_children) {
+                    child->acceptLambda(lambda);
+                }
+            }
+
+            template <typename L>
+            void visitChildren(const L& lambda) const {
+                for (const auto* child : m_children) {
+                    child->acceptLambda(lambda);
                 }
             }
 
