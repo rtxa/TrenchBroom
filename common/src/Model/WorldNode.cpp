@@ -149,11 +149,6 @@ namespace TrenchBroom {
             invalidateAllIssues();
         }
 
-        class WorldNode::MatchTreeNodes {
-        public:
-            bool operator()(const Model::Node* node) const   { return node->shouldAddToSpacialIndex(); }
-        };
-
         void WorldNode::disableNodeTreeUpdates() {
             m_updateNodeTree = false;
         }
@@ -163,12 +158,17 @@ namespace TrenchBroom {
         }
 
         void WorldNode::rebuildNodeTree() {
-            using CollectTreeNodes = CollectMatchingNodesVisitor<MatchTreeNodes>;
+            auto nodes = std::vector<Model::Node*>{};
+            acceptLambda(kdl::overload {
+                [&](auto&& thisLambda, auto* node) { 
+                    if (node->shouldAddToSpacialIndex()) { 
+                        nodes.push_back(node); 
+                    }
+                    node->visitChildren(thisLambda);
+                }
+            });
 
-            CollectTreeNodes collect;
-            acceptAndRecurse(collect);
-
-            m_nodeTree->clearAndBuild(collect.nodes(), [](const auto* node){ return node->physicalBounds(); });
+            m_nodeTree->clearAndBuild(nodes, [](const auto* node){ return node->physicalBounds(); });
         }
 
         void WorldNode::invalidateAllIssues() {
