@@ -29,17 +29,17 @@
 
 namespace TrenchBroom {
     namespace Model {
-        static void takeSnapshot(Node* node, std::vector<NodeSnapshot*>& snapshots) {
+        static void takeSnapshotsOfChildren(Node* node, std::vector<NodeSnapshot*>& snapshots) {
             for (auto* child : node->children()) {
-                if (auto* snapshot = node->takeSnapshot()) {
+                if (auto* snapshot = child->takeSnapshot()) {
                     snapshots.push_back(snapshot);
-                    takeSnapshot(child, snapshots);
                 }
+                takeSnapshotsOfChildren(child, snapshots);
             }
         }
 
         GroupSnapshot::GroupSnapshot(GroupNode* group) {
-            takeSnapshot(group, m_snapshots);
+            takeSnapshotsOfChildren(group, m_snapshots);
         }
 
         GroupSnapshot::~GroupSnapshot() {
