@@ -551,7 +551,7 @@ namespace kdl {
     template<typename T, typename A, typename Compare = std::less<T>>
     std::vector<T, A> vec_sort(std::vector<T, A>&& v, const Compare& cmp = Compare()) {
         std::sort(std::begin(v), std::end(v), cmp);
-        return v;
+        return std::move(v);
     }
 
     /**
@@ -585,7 +585,7 @@ namespace kdl {
     std::vector<T, A> vec_sort_and_remove_duplicates(std::vector<T, A>&& v, const Compare& cmp = Compare()) {
         std::sort(std::begin(v), std::end(v), cmp);
         v.erase(std::unique(std::begin(v), std::end(v), kdl::equivalence<T, Compare>(cmp)), std::end(v));
-        return v;
+        return std::move(v);
     }
 
     /**
