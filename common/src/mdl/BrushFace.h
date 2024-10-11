@@ -198,6 +198,12 @@ public:
   float resolvedSurfaceValue() const;
   Color resolvedColor() const;
 
+  // Genesis3D
+  int resolvedTransparencyValue() const;
+  float resolvedReflectivityScale() const;
+  vm::vec2f resolvedLightMapScale() const;
+  float resolvedMipMapBias() const;
+
   void resetUVCoordSystemCache();
   const UVCoordSystem& uvCoordSystem() const;
 

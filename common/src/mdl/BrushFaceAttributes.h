@@ -51,6 +51,12 @@ private:
 
   std::optional<Color> m_color;
 
+  // Genesis3D Attributes
+  std::optional<int> m_transparencyValue;
+  std::optional<float> m_reflectivityScale;
+  std::optional<vm::vec2f> m_lightMapScale;
+  std::optional<float> m_mipMapBias;
+
 public:
   explicit BrushFaceAttributes(std::string_view materialName);
   BrushFaceAttributes(std::string_view materialName, const BrushFaceAttributes& other);
@@ -64,7 +70,10 @@ public:
     m_surfaceContents,
     m_surfaceFlags,
     m_surfaceValue,
-    m_color);
+    m_color,
+    m_transparencyValue,
+    m_lightMapScale,
+    m_mipMapBias);
 
   const std::string& materialName() const;
 
@@ -87,6 +96,18 @@ public:
   bool hasColor() const;
   const std::optional<Color>& color() const;
 
+  bool hasTransparencyValue() const;
+  const std::optional<int>& transparencyValue() const;
+
+  bool hasReflectivityScale() const;
+  const std::optional<float>& reflectivityScale() const;
+
+  bool hasLightMapScale() const;
+  const std::optional<vm::vec2f>& lightMapScale() const;
+
+  bool hasMipMapBias() const;
+  const std::optional<float>& mipMapBias() const;
+
   bool valid() const;
 
   bool setMaterialName(const std::string& materialName);
@@ -101,6 +122,11 @@ public:
   bool setSurfaceFlags(const std::optional<int>& surfaceFlags);
   bool setSurfaceValue(const std::optional<float>& surfaceValue);
   bool setColor(const std::optional<Color>& color);
+  bool setTransparencyValue(const std::optional<int>& transparencyValue);
+  bool setReflectivityScale(const std::optional<float>& reflectivityScale);
+  bool setXLightMapScale(const float xLightMapScale);
+  bool setYLightMapScale(const float yLightMapScale);
+  bool setMipMapBias(const std::optional<float>& mipMapBias);
 };
 
 } // namespace tb::mdl

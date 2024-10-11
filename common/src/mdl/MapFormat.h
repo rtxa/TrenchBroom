@@ -58,6 +58,10 @@ enum class MapFormat
    */
   Daikatana,
   /**
+   * Genesis3D map format.
+   */
+  Genesis3D,
+  /**
    * Quake 3 legacy format (like Quake 2, no brush primitives)
    */
   Quake3_Legacy,
