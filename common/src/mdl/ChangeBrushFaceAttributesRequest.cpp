@@ -166,6 +166,9 @@ bool ChangeBrushFaceAttributesRequest::evaluate(BrushFace& brushFace) const
     m_surfaceValueOp));
   result |= attributes.setColor(evaluateValueOp(
     attributes.color(), brushFace.resolvedColor(), m_colorValue, m_colorValueOp));
+  result |= attributes.setTransparencyValue(evaluateValueOp(
+    attributes.transparencyValue(), brushFace.resolvedTransparencyValue(), m_transparencyValue, m_transparencyValueOp
+    ));
 
   brushFace.setAttributes(attributes);
 
@@ -417,6 +420,12 @@ void ChangeBrushFaceAttributesRequest::setColor(const std::optional<Color>& colo
   m_colorValueOp = ValueOp::Set;
 }
 
+void ChangeBrushFaceAttributesRequest::setTransparencyValue(const std::optional<int>& transparencyValue)
+{
+  m_transparencyValue = transparencyValue;
+  m_transparencyValueOp = ValueOp::Set;
+}
+
 void ChangeBrushFaceAttributesRequest::setAll(const mdl::BrushFace& face)
 {
   setAll(face.attributes());
@@ -446,6 +455,7 @@ void ChangeBrushFaceAttributesRequest::setAllExceptContentFlags(
   replaceSurfaceFlags(attributes.surfaceFlags());
   setSurfaceValue(attributes.surfaceValue());
   setColor(attributes.color());
+  setTransparencyValue(attributes.transparencyValue());
 }
 
 } // namespace tb::mdl

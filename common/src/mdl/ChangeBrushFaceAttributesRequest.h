@@ -75,6 +75,7 @@ private:
   std::optional<int> m_contentFlags;
   std::optional<float> m_surfaceValue;
   std::optional<Color> m_colorValue;
+  std::optional<int> m_transparencyValue;
 
   MaterialOp m_materialOp = MaterialOp::None;
   AxisOp m_axisOp = AxisOp::None;
@@ -87,6 +88,7 @@ private:
   FlagOp m_contentFlagsOp = FlagOp::None;
   ValueOp m_surfaceValueOp = ValueOp::None;
   ValueOp m_colorValueOp = ValueOp::None;
+  ValueOp m_transparencyValueOp = ValueOp::None;
 
 public:
   ChangeBrushFaceAttributesRequest();
@@ -157,6 +159,7 @@ public:
   void mulSurfaceValue(float surfaceValue);
 
   void setColor(const std::optional<Color>& colorValue);
+  void setTransparencyValue(const std::optional<int>& transparencyValue);
 
   /**
    * Configures `this` so, when evaluated, it transfers all attributes from the given

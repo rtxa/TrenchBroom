@@ -80,6 +80,11 @@ private:
   QLineEdit* m_colorEditor = nullptr;
   QAbstractButton* m_colorUnsetButton = nullptr;
 
+  QLabel* m_transparencyLabel = nullptr;
+  QWidget* m_transparencyEditorLayout = nullptr;
+  QLineEdit* m_transparencyEditor = nullptr;
+  QAbstractButton* m_transparencyUnsetButton = nullptr;
+
   SignalDelayer* m_updateControlsSignalDelayer = nullptr;
 
   NotifierConnection m_notifierConnection;
@@ -102,10 +107,12 @@ private:
   void contentFlagChanged(size_t index, int value, int setFlag, int mixedFlag);
   void surfaceValueChanged(double value);
   void colorValueChanged(const QString& text);
+  void transparencyValueChanged(const QString& text);
   void surfaceFlagsUnset();
   void contentFlagsUnset();
   void surfaceValueUnset();
   void colorValueUnset();
+  void transparencyValueUnset();
   void updateIncrements();
 
 private:
@@ -134,6 +141,10 @@ private:
   bool hasColorAttribs() const;
   void showColorAttribEditor();
   void hideColorAttribEditor();
+
+  bool hasTransparencyAttribs() const;
+  void hideTransparencyAttribEditor();
+  void showTransparencyAttribEditor();
 
   std::tuple<QList<int>, QStringList, QStringList> getSurfaceFlags() const;
   std::tuple<QList<int>, QStringList, QStringList> getContentFlags() const;

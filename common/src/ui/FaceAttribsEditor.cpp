@@ -251,6 +251,22 @@ void FaceAttribsEditor::colorValueChanged(const QString& /* text */)
   }
 }
 
+void FaceAttribsEditor::transparencyValueChanged(const QString& /* text */)
+{
+  auto document = kdl::mem_lock(m_document);
+  if (!document->hasAnySelectedBrushFaces())
+  {
+    return;
+  }
+  
+  auto request = mdl::ChangeBrushFaceAttributesRequest{};
+  request.setTransparencyValue(m_transparencyEditor->text().toInt());
+  if (!document->setFaceAttributes(request))
+  {
+    updateControls();
+  }
+}
+
 void FaceAttribsEditor::surfaceFlagsUnset()
 {
   auto document = kdl::mem_lock(m_document);
@@ -309,6 +325,22 @@ void FaceAttribsEditor::colorValueUnset()
 
   auto request = mdl::ChangeBrushFaceAttributesRequest{};
   request.setColor(std::nullopt);
+  if (!document->setFaceAttributes(request))
+  {
+    updateControls();
+  }
+}
+
+void FaceAttribsEditor::transparencyValueUnset()
+{
+  auto document = kdl::mem_lock(m_document);
+  if (!document->hasAnySelectedBrushFaces())
+  {
+    return;
+  }
+
+  auto request = mdl::ChangeBrushFaceAttributesRequest{};
+  request.setTransparencyValue(std::nullopt);
   if (!document->setFaceAttributes(request))
   {
     updateControls();
@@ -418,6 +450,12 @@ void FaceAttribsEditor::createGui(GLContextManager& contextManager)
   m_colorUnsetButton = createBitmapButton("ResetUV.svg", tr("Unset color"));
   m_colorEditorLayout = createUnsetButtonLayout(m_colorEditor, m_colorUnsetButton);
 
+  m_transparencyLabel = new QLabel{"Transparency"};
+  makeEmphasized(m_transparencyLabel);
+  m_transparencyEditor = new QLineEdit{};
+  m_transparencyUnsetButton = createBitmapButton("ResetUV.svg", tr("Unset transparency"));
+  m_transparencyEditorLayout = createUnsetButtonLayout(m_transparencyEditor, m_transparencyUnsetButton);
+
   const Qt::Alignment LabelFlags = Qt::AlignVCenter | Qt::AlignRight;
   const Qt::Alignment ValueFlags = Qt::AlignVCenter;
 
@@ -473,6 +511,11 @@ void FaceAttribsEditor::createGui(GLContextManager& contextManager)
 
   faceAttribsLayout->addWidget(m_colorLabel, r, c++, LabelFlags);
   faceAttribsLayout->addWidget(m_colorEditorLayout, r, c++, 1, 3);
+  ++r;
+  c = 0;
+
+  faceAttribsLayout->addWidget(m_transparencyLabel, r, c++, LabelFlags);
+  faceAttribsLayout->addWidget(m_transparencyEditorLayout, r, c++, 1, 3);
   ++r;
   c = 0;
 
@@ -534,6 +577,8 @@ void FaceAttribsEditor::bindEvents()
   connect(
     m_colorEditor, &QLineEdit::textEdited, this, &FaceAttribsEditor::colorValueChanged);
   connect(
+    m_transparencyEditor, &QLineEdit::textEdited, this, &FaceAttribsEditor::transparencyValueChanged);
+  connect(
     m_surfaceValueUnsetButton,
     &QAbstractButton::clicked,
     this,
@@ -553,6 +598,11 @@ void FaceAttribsEditor::bindEvents()
     &QAbstractButton::clicked,
     this,
     &FaceAttribsEditor::colorValueUnset);
+  connect(
+    m_transparencyUnsetButton,
+    &QAbstractButton::clicked,
+    this,
+    &FaceAttribsEditor::transparencyValueUnset);
   connect(
     m_updateControlsSignalDelayer,
     &SignalDelayer::processSignal,
@@ -674,6 +724,15 @@ void FaceAttribsEditor::updateControls()
     hideColorAttribEditor();
   }
 
+  if (hasTransparencyAttribs())
+  {
+    showTransparencyAttribEditor();
+  }
+  else
+  {
+    hideTransparencyAttribEditor();
+  }
+
   const auto faceHandles = kdl::mem_lock(m_document)->allSelectedBrushFaces();
   if (!faceHandles.empty())
   {
@@ -685,6 +744,7 @@ void FaceAttribsEditor::updateControls()
     auto yScaleMulti = false;
     auto surfaceValueMulti = false;
     auto colorValueMulti = false;
+    auto transparencyValueMulti = false;
 
     const auto& firstFace = faceHandles[0].face();
     const auto& materialName = firstFace.attributes().materialName();
@@ -698,10 +758,12 @@ void FaceAttribsEditor::updateControls()
     auto mixedSurfaceFlags = 0;
     auto mixedSurfaceContents = 0;
     const auto surfaceValue = firstFace.resolvedSurfaceValue();
+    const auto transparencyValue = firstFace.resolvedTransparencyValue();
     const auto colorValue = firstFace.attributes().color();
     auto hasSurfaceValue = firstFace.attributes().surfaceValue().has_value();
     auto hasSurfaceFlags = firstFace.attributes().surfaceFlags().has_value();
     auto hasSurfaceContents = firstFace.attributes().surfaceContents().has_value();
+    auto hasTransparencyValue = firstFace.attributes().hasTransparencyValue();
     auto hasColorValue = firstFace.attributes().hasColor();
 
     for (size_t i = 1; i < faceHandles.size(); i++)
@@ -715,10 +777,12 @@ void FaceAttribsEditor::updateControls()
       yScaleMulti |= (yScale != face.attributes().yScale());
       surfaceValueMulti |= (surfaceValue != face.resolvedSurfaceValue());
       colorValueMulti |= (colorValue != face.attributes().color());
+      transparencyValueMulti |= (transparencyValue != face.resolvedTransparencyValue());
       hasSurfaceValue |= face.attributes().surfaceValue().has_value();
       hasSurfaceFlags |= face.attributes().surfaceFlags().has_value();
       hasSurfaceContents |= face.attributes().surfaceContents().has_value();
       hasColorValue |= face.attributes().hasColor();
+      hasTransparencyValue |= face.attributes().hasTransparencyValue();
 
       combineFlags(
         sizeof(int) * 8, face.resolvedSurfaceFlags(), setSurfaceFlags, mixedSurfaceFlags);
@@ -738,6 +802,7 @@ void FaceAttribsEditor::updateControls()
     m_surfaceFlagsEditor->setEnabled(true);
     m_contentFlagsEditor->setEnabled(true);
     m_colorEditor->setEnabled(true);
+    m_transparencyEditor->setEnabled(true);
 
     if (materialMulti)
     {
@@ -797,13 +862,35 @@ void FaceAttribsEditor::updateControls()
       m_colorEditor->setPlaceholderText("");
       m_colorEditor->setText("");
     }
+
+    if (hasTransparencyValue)
+    {
+      if (transparencyValueMulti)
+      {
+        m_transparencyEditor->setPlaceholderText("multi");
+        m_transparencyEditor->setText("");
+      }
+      else
+      {
+        m_transparencyEditor->setPlaceholderText("");
+        m_transparencyEditor->setText(QString::number(transparencyValue));
+      }
+    }
+    else
+    {
+      m_transparencyEditor->setPlaceholderText("");
+      m_transparencyEditor->setText("");
+    }
+
     m_surfaceFlagsEditor->setFlagValue(setSurfaceFlags, mixedSurfaceFlags);
     m_contentFlagsEditor->setFlagValue(setSurfaceContents, mixedSurfaceContents);
+
 
     m_surfaceValueUnsetButton->setEnabled(hasSurfaceValue);
     m_surfaceFlagsUnsetButton->setEnabled(hasSurfaceFlags);
     m_contentFlagsUnsetButton->setEnabled(hasSurfaceContents);
     m_colorUnsetButton->setEnabled(hasColorValue);
+    m_transparencyUnsetButton->setEnabled(hasTransparencyValue);
   }
   else
   {
@@ -820,10 +907,15 @@ void FaceAttribsEditor::updateControls()
     m_colorEditor->setPlaceholderText("n/a");
     m_colorEditor->setEnabled(false);
 
+    m_transparencyEditor->setText("");
+    m_transparencyEditor->setPlaceholderText("n/a");
+    m_transparencyEditor->setEnabled(false);
+
     m_surfaceValueUnsetButton->setEnabled(false);
     m_surfaceFlagsUnsetButton->setEnabled(false);
     m_contentFlagsUnsetButton->setEnabled(false);
     m_colorUnsetButton->setEnabled(false);
+    m_transparencyUnsetButton->setEnabled(false);
   }
 }
 
@@ -890,6 +982,25 @@ void FaceAttribsEditor::hideColorAttribEditor()
 {
   m_colorLabel->hide();
   m_colorEditorLayout->hide();
+}
+
+bool FaceAttribsEditor::hasTransparencyAttribs() const
+{
+  auto document = kdl::mem_lock(m_document);
+  return document->world()->mapFormat() == mdl::MapFormat::Genesis3D;
+}
+
+
+void FaceAttribsEditor::showTransparencyAttribEditor()
+{
+  m_transparencyLabel->show();
+  m_transparencyEditorLayout->show();
+}
+
+void FaceAttribsEditor::hideTransparencyAttribEditor()
+{
+  m_transparencyLabel->hide();
+  m_transparencyEditorLayout->hide();
 }
 
 namespace
