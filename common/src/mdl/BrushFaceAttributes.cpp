@@ -45,6 +45,11 @@ BrushFaceAttributes::BrushFaceAttributes(
   , m_surfaceFlags{other.m_surfaceFlags}
   , m_surfaceValue{other.m_surfaceValue}
   , m_color{other.m_color}
+  , m_transparencyValue{other.m_transparencyValue}
+  , m_reflectivityScale{other.m_reflectivityScale}
+  , m_xLightMapScale{other.m_xLightMapScale}
+  , m_yLightMapScale{other.m_yLightMapScale}
+  , m_mipMapBias{other.m_mipMapBias}
 {
 }
 
@@ -124,6 +129,56 @@ bool BrushFaceAttributes::hasColor() const
 const std::optional<Color>& BrushFaceAttributes::color() const
 {
   return m_color;
+}
+
+bool BrushFaceAttributes::hasTransparencyValue() const
+{
+  return m_transparencyValue.has_value();
+}
+
+const std::optional<int>& BrushFaceAttributes::transparencyValue() const
+{
+  return m_transparencyValue;
+}
+
+bool BrushFaceAttributes::hasReflectivityScale() const
+{
+  return m_reflectivityScale.has_value();
+}
+
+const std::optional<float>& BrushFaceAttributes::reflectivityScale() const
+{
+  return m_reflectivityScale;
+}
+
+bool BrushFaceAttributes::hasXLightMapScale() const
+{
+  return m_xLightMapScale.has_value();
+}
+
+const std::optional<float>& BrushFaceAttributes::xLightMapScale() const
+{
+  return m_xLightMapScale;
+}
+
+bool BrushFaceAttributes::hasYLightMapScale() const
+{
+  return m_yLightMapScale.has_value();
+}
+
+const std::optional<float>& BrushFaceAttributes::yLightMapScale() const
+{
+  return m_yLightMapScale;
+}
+
+bool BrushFaceAttributes::hasMipMapBias() const
+{
+  return m_mipMapBias.has_value();
+}
+
+const std::optional<float>& BrushFaceAttributes::mipMapBias() const
+{
+  return m_mipMapBias;
 }
 
 bool BrushFaceAttributes::valid() const
@@ -247,6 +302,59 @@ bool BrushFaceAttributes::setColor(const std::optional<Color>& color)
   if (color != m_color)
   {
     m_color = color;
+    return true;
+  }
+  return false;
+}
+
+bool BrushFaceAttributes::setTransparencyValue(
+  const std::optional<int>& transparencyValue)
+{
+  if (transparencyValue != m_transparencyValue)
+  {
+    m_transparencyValue = transparencyValue;
+    return true;
+  }
+  return false;
+}
+
+bool BrushFaceAttributes::setReflectivityScale(
+  const std::optional<float>& reflectivityScale)
+{
+  if (reflectivityScale != m_reflectivityScale)
+  {
+    m_reflectivityScale = reflectivityScale;
+    return true;
+  }
+  return false;
+}
+
+bool BrushFaceAttributes::setXLightMapScale(const std::optional<float>& xLightMapScale)
+{
+  if (xLightMapScale != m_xLightMapScale)
+  {
+    m_xLightMapScale = xLightMapScale;
+    return true;
+  }
+  return false;
+}
+
+bool BrushFaceAttributes::setYLightMapScale(const std::optional<float>& yLightMapScale)
+{
+  if (yLightMapScale != m_yLightMapScale)
+  {
+    m_yLightMapScale = yLightMapScale;
+    return true;
+  }
+  return false;
+}
+
+
+bool BrushFaceAttributes::setMipMapBias(const std::optional<float>& mipMapBias)
+{
+  if (mipMapBias != m_mipMapBias)
+  {
+    m_mipMapBias = mipMapBias;
     return true;
   }
   return false;

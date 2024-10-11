@@ -420,6 +420,9 @@ void StandardMapParser::parseFace(ParserStatus& status, const bool primitive)
   case mdl::MapFormat::Daikatana:
     parseDaikatanaFace(status);
     break;
+  case mdl::MapFormat::Genesis3D:
+    parseGenesis3DFace(status);
+    break;
   case mdl::MapFormat::Valve:
     parseValveFace(status);
     break;
@@ -569,6 +572,48 @@ void StandardMapParser::parseDaikatanaFace(ParserStatus& status)
   }
 
   onStandardBrushFace(location, m_targetMapFormat, p1, p2, p3, attribs, status);
+}
+
+/**
+ * Parses a face definition in the Genesis3D format.
+ *
+ * The format is as follows:
+ *
+ *   (x1 y1 z1) (x2 y2 z2) (x3 y3 z3) <materialName> [ ux uy uz xOffset ]
+ *   [ vx vy vz yOffset ] <rotation> <xScale> <yScale> <surfaceContents> <surfaceFlags>
+ *   <surfaceValue> <transparencyValue> <reflectivityScale> <xLightMapScale>
+ *   <yLightMapScale> <mipMapBias>
+ *
+ * Note that the surfaceValue is interpreted as a light value in Genesis3D.
+ */
+void StandardMapParser::parseGenesis3DFace(ParserStatus& status)
+{
+  const auto location = m_tokenizer.location();
+
+  const auto [p1, p2, p3] = parseFacePoints(status);
+  const auto materialName = parseMaterialName(status);
+
+  const auto [uAxis, uOffset, vAxis, vOffset] = parseValveUVAxes(status);
+
+  auto attribs = mdl::BrushFaceAttributes{materialName};
+  attribs.setXOffset(uOffset);
+  attribs.setYOffset(vOffset);
+  attribs.setRotation(parseFloat());
+  attribs.setXScale(parseFloat());
+  attribs.setYScale(parseFloat());
+
+  attribs.setSurfaceContents(parseInteger());
+  attribs.setSurfaceFlags(parseInteger());
+  attribs.setSurfaceValue(parseFloat()); // Light Intensity in G3D
+
+  attribs.setTransparencyValue(parseInteger());
+  attribs.setReflectivityScale(parseFloat());
+  attribs.setXLightMapScale(parseFloat());
+  attribs.setYLightMapScale(parseFloat());
+  attribs.setMipMapBias(parseFloat());
+
+  onValveBrushFace(
+    location, m_targetMapFormat, p1, p2, p3, attribs, uAxis, vAxis, status);
 }
 
 void StandardMapParser::parseValveFace(ParserStatus& status)

@@ -484,6 +484,32 @@ Color BrushFace::resolvedColor() const
   return m_attributes.color().value_or(Color{});
 }
 
+int BrushFace::resolvedTransparencyValue() const
+{
+  return m_attributes.transparencyValue().value_or(255);
+}
+
+float BrushFace::resolvedReflectivityScale() const
+{
+  return m_attributes.reflectivityScale().value_or(1.0f);
+}
+
+
+float BrushFace::resolvedXLightMapScale() const
+{
+  return m_attributes.xLightMapScale().value_or(1.0f);
+}
+
+float BrushFace::resolvedYLightMapScale() const
+{
+  return m_attributes.yLightMapScale().value_or(1.0f);
+}
+
+float BrushFace::resolvedMipMapBias() const
+{
+  return m_attributes.mipMapBias().value_or(1.0f);
+}
+
 void BrushFace::resetUVCoordSystemCache()
 {
   if (m_uvCoordSystem != nullptr)

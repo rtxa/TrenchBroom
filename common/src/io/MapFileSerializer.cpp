@@ -241,6 +241,58 @@ protected:
   }
 };
 
+class Genesis3DFileSerializer : public Quake2ValveFileSerializer
+{
+private:
+  std::string SurfaceExtended;
+
+public:
+  explicit Genesis3DFileSerializer(std::ostream& stream)
+    : Quake2ValveFileSerializer(stream)
+    , SurfaceExtended(" %d %f %f %f %f")
+  {
+  }
+
+private:
+  /**
+   * Writes a brush face to the given stream in the format expected by Genesis3D.
+   *
+   * The output format is:
+   *
+   *   (x1 y1 z1) (x2 y2 z2) (x3 y3 z3) <materialName> [ ux uy uz xOffset ]
+   *   [ vx vy vz yOffset ] <rotation> <xScale> <yScale> <surfaceContents> <surfaceFlags>
+   *   <surfaceValue> <transparencyValue> <reflectivityScale> <xLightMapScale>
+   *   <yLightMapScale> <mipMapBias>
+   *
+   * Note that the surfaceValue is interpreted as a light value in Genesis3D.
+   *
+   * @param stream the stream to write to
+   * @param face the face to write
+   */
+  void doWriteBrushFace(std::ostream& stream, const mdl::BrushFace& face) const override
+  {
+    writeFacePoints(stream, face);
+    writeValveMaterialInfo(stream, face);
+    writeSurfaceAttributes(stream, face);
+    writeSurfaceAttributesEx(stream, face);
+
+    fmt::format_to(std::ostreambuf_iterator<char>(stream), "\n");
+  }
+
+protected:
+  void writeSurfaceAttributesEx(std::ostream& stream, const mdl::BrushFace& face) const
+  {
+    fmt::format_to(
+      std::ostreambuf_iterator<char>(stream),
+      " {} {} {} {} {}",
+      face.resolvedTransparencyValue(),
+      face.resolvedReflectivityScale(),
+      face.resolvedXLightMapScale(),
+      face.resolvedYLightMapScale(),
+      face.resolvedMipMapBias());
+  }
+};
+
 class Hexen2FileSerializer : public QuakeFileSerializer
 {
 public:
@@ -293,6 +345,8 @@ std::unique_ptr<NodeSerializer> MapFileSerializer::create(
     return std::make_unique<Quake2ValveFileSerializer>(stream);
   case mdl::MapFormat::Daikatana:
     return std::make_unique<DaikatanaFileSerializer>(stream);
+  case mdl::MapFormat::Genesis3D:
+    return std::make_unique<Genesis3DFileSerializer>(stream);
   case mdl::MapFormat::Valve:
     return std::make_unique<ValveFileSerializer>(stream);
   case mdl::MapFormat::Hexen2:
