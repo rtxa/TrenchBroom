@@ -166,6 +166,31 @@ bool ChangeBrushFaceAttributesRequest::evaluate(BrushFace& brushFace) const
     m_surfaceValueOp));
   result |= attributes.setColor(evaluateValueOp(
     attributes.color(), brushFace.resolvedColor(), m_colorValue, m_colorValueOp));
+  result |= attributes.setTransparencyValue(evaluateValueOp(
+    attributes.transparencyValue(),
+    brushFace.resolvedTransparencyValue(),
+    m_transparencyValue,
+    m_transparencyValueOp));
+  result |= attributes.setReflectivityScale(evaluateValueOp(
+    attributes.reflectivityScale(),
+    brushFace.resolvedReflectivityScale(),
+    m_reflectivityScale,
+    m_reflectivityScaleOp));
+  result |= attributes.setXLightMapScale(evaluateValueOp(
+    attributes.xLightMapScale(),
+    brushFace.resolvedXLightMapScale(),
+    m_xLightMapScale,
+    m_xLightMapScaleOp));
+  result |= attributes.setYLightMapScale(evaluateValueOp(
+    attributes.yLightMapScale(),
+    brushFace.resolvedYLightMapScale(),
+    m_yLightMapScale,
+    m_yLightMapScaleOp));
+  result |= attributes.setMipMapBias(evaluateValueOp(
+    attributes.mipMapBias(),
+    brushFace.resolvedMipMapBias(),
+    m_mipMapBias,
+    m_mipMapBiasOp));
 
   brushFace.setAttributes(attributes);
 
@@ -417,6 +442,89 @@ void ChangeBrushFaceAttributesRequest::setColor(const std::optional<Color>& colo
   m_colorValueOp = ValueOp::Set;
 }
 
+void ChangeBrushFaceAttributesRequest::setTransparencyValue(
+  const std::optional<int>& transparencyValue)
+{
+  m_transparencyValue = transparencyValue;
+  m_transparencyValueOp = ValueOp::Set;
+}
+
+void ChangeBrushFaceAttributesRequest::setReflectivityScale(
+  const std::optional<float>& reflectivityScale)
+{
+  m_reflectivityScale = reflectivityScale;
+  m_reflectivityScaleOp = ValueOp::Set;
+}
+
+void ChangeBrushFaceAttributesRequest::addReflectivityScale(const float reflectivityScale)
+{
+  m_reflectivityScale = reflectivityScale;
+  m_reflectivityScaleOp = ValueOp::Add;
+}
+
+void ChangeBrushFaceAttributesRequest::mulReflectivityScale(const float reflectivityScale)
+{
+  m_reflectivityScale = reflectivityScale;
+  m_reflectivityScaleOp = ValueOp::Mul;
+}
+
+void ChangeBrushFaceAttributesRequest::setXLightMapScale(
+  const std::optional<float>& xLightMapScale)
+{
+  m_xLightMapScale = xLightMapScale;
+  m_xLightMapScaleOp = ValueOp::Set;
+}
+
+void ChangeBrushFaceAttributesRequest::addXLightMapScale(const float xLightMapScale)
+{
+  m_xLightMapScale = xLightMapScale;
+  m_xLightMapScaleOp = ValueOp::Add;
+}
+
+void ChangeBrushFaceAttributesRequest::mulXLightMapScale(const float xLightMapScale)
+{
+  m_xLightMapScale = xLightMapScale;
+  m_xLightMapScaleOp = ValueOp::Mul;
+}
+
+void ChangeBrushFaceAttributesRequest::setYLightMapScale(
+  const std::optional<float>& yLightMapScale)
+{
+  m_yLightMapScale = yLightMapScale;
+  m_yLightMapScaleOp = ValueOp::Set;
+}
+
+void ChangeBrushFaceAttributesRequest::addYLightMapScale(const float yLightMapScale)
+{
+  m_yLightMapScale = yLightMapScale;
+  m_yLightMapScaleOp = ValueOp::Add;
+}
+
+void ChangeBrushFaceAttributesRequest::mulYLightMapScale(const float yLightMapScale)
+{
+  m_yLightMapScale = yLightMapScale;
+  m_yLightMapScaleOp = ValueOp::Mul;
+}
+
+void ChangeBrushFaceAttributesRequest::setMipMapBias(
+  const std::optional<float>& mipMapBias)
+{
+  m_mipMapBias = mipMapBias;
+  m_mipMapBiasOp = ValueOp::Set;
+}
+
+void ChangeBrushFaceAttributesRequest::addMipMapBias(const float mipMapBias)
+{
+  m_mipMapBias = mipMapBias;
+  m_mipMapBiasOp = ValueOp::Add;
+}
+
+void ChangeBrushFaceAttributesRequest::mulMipMapBias(const float mipMapBias)
+{
+  m_mipMapBias = mipMapBias;
+  m_mipMapBiasOp = ValueOp::Mul;
+}
+
 void ChangeBrushFaceAttributesRequest::setAll(const mdl::BrushFace& face)
 {
   setAll(face.attributes());
@@ -446,6 +554,10 @@ void ChangeBrushFaceAttributesRequest::setAllExceptContentFlags(
   replaceSurfaceFlags(attributes.surfaceFlags());
   setSurfaceValue(attributes.surfaceValue());
   setColor(attributes.color());
+  setTransparencyValue(attributes.transparencyValue());
+  setXLightMapScale(attributes.xLightMapScale());
+  setYLightMapScale(attributes.yLightMapScale());
+  setMipMapBias(attributes.mipMapBias());
 }
 
 } // namespace tb::mdl
