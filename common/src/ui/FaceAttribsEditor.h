@@ -80,6 +80,31 @@ private:
   QLineEdit* m_colorEditor = nullptr;
   QAbstractButton* m_colorUnsetButton = nullptr;
 
+  QLabel* m_transparencyValueLabel = nullptr;
+  QWidget* m_transparencyValueEditorLayout = nullptr;
+  SpinControl* m_transparencyValueEditor = nullptr;
+  QAbstractButton* m_transparencyValueUnsetButton = nullptr;
+
+  QLabel* m_reflectivityScaleLabel = nullptr;
+  QWidget* m_reflectivityScaleEditorLayout = nullptr;
+  SpinControl* m_reflectivityScaleEditor = nullptr;
+  QAbstractButton* m_reflectivityScaleUnsetButton = nullptr;
+
+  QLabel* m_xLightMapScaleLabel = nullptr;
+  QWidget* m_xLightMapScaleEditorLayout = nullptr;
+  SpinControl* m_xLightMapScaleEditor = nullptr;
+  QAbstractButton* m_xLightMapScaleUnsetButton = nullptr;
+
+  QLabel* m_yLightMapScaleLabel = nullptr;
+  QWidget* m_yLightMapScaleEditorLayout = nullptr;
+  SpinControl* m_yLightMapScaleEditor = nullptr;
+  QAbstractButton* m_yLightMapScaleUnsetButton = nullptr;
+
+  QLabel* m_mipMapBiasLabel = nullptr;
+  QWidget* m_mipMapBiasEditorLayout = nullptr;
+  SpinControl* m_mipMapBiasEditor = nullptr;
+  QAbstractButton* m_mipMapBiasUnsetButton = nullptr;
+
   SignalDelayer* m_updateControlsSignalDelayer = nullptr;
 
   NotifierConnection m_notifierConnection;
@@ -102,10 +127,20 @@ private:
   void contentFlagChanged(size_t index, int value, int setFlag, int mixedFlag);
   void surfaceValueChanged(double value);
   void colorValueChanged(const QString& text);
+  void transparencyValueChanged(double value);
+  void reflectivityScaleChanged(double value);
+  void xLightMapScaleChanged(double value);
+  void yLightMapScaleChanged(double value);
+  void mipMapBiasChanged(double value);
   void surfaceFlagsUnset();
   void contentFlagsUnset();
   void surfaceValueUnset();
   void colorValueUnset();
+  void transparencyValueUnset();
+  void reflectivityScaleUnset();
+  void xLightMapScaleUnset();
+  void yLightMapScaleUnset();
+  void mipMapBiasUnset();
   void updateIncrements();
 
 private:
@@ -134,6 +169,10 @@ private:
   bool hasColorAttribs() const;
   void showColorAttribEditor();
   void hideColorAttribEditor();
+
+  bool hasGenesisAttribs() const;
+  void showGenesisAttribsEditor();
+  void hideGenesisAttribsEditor();
 
   std::tuple<QList<int>, QStringList, QStringList> getSurfaceFlags() const;
   std::tuple<QList<int>, QStringList, QStringList> getContentFlags() const;

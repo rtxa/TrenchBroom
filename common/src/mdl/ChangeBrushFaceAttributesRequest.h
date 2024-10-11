@@ -75,6 +75,11 @@ private:
   std::optional<int> m_contentFlags;
   std::optional<float> m_surfaceValue;
   std::optional<Color> m_colorValue;
+  std::optional<int> m_transparencyValue;
+  std::optional<float> m_reflectivityScale;
+  std::optional<float> m_xLightMapScale;
+  std::optional<float> m_yLightMapScale;
+  std::optional<float> m_mipMapBias;
 
   MaterialOp m_materialOp = MaterialOp::None;
   AxisOp m_axisOp = AxisOp::None;
@@ -87,6 +92,11 @@ private:
   FlagOp m_contentFlagsOp = FlagOp::None;
   ValueOp m_surfaceValueOp = ValueOp::None;
   ValueOp m_colorValueOp = ValueOp::None;
+  ValueOp m_transparencyValueOp = ValueOp::None;
+  ValueOp m_reflectivityScaleOp = ValueOp::None;
+  ValueOp m_xLightMapScaleOp = ValueOp::None;
+  ValueOp m_yLightMapScaleOp = ValueOp::None;
+  ValueOp m_mipMapBiasOp = ValueOp::None;
 
 public:
   ChangeBrushFaceAttributesRequest();
@@ -157,6 +167,23 @@ public:
   void mulSurfaceValue(float surfaceValue);
 
   void setColor(const std::optional<Color>& colorValue);
+  void setTransparencyValue(const std::optional<int>& transparencyValue);
+
+  void setReflectivityScale(const std::optional<float>& reflectivityScale);
+  void addReflectivityScale(float reflectivityScale);
+  void mulReflectivityScale(float reflectivityScale);
+
+  void setXLightMapScale(const std::optional<float>& xLightMapScale);
+  void addXLightMapScale(float xLightMapScale);
+  void mulXLightMapScale(float xLightMapScale);
+
+  void setYLightMapScale(const std::optional<float>& yLightMapScale);
+  void addYLightMapScale(float yLightMapScale);
+  void mulYLightMapScale(float yLightMapScale);
+
+  void setMipMapBias(const std::optional<float>& mipMapBias);
+  void addMipMapBias(float mipMapBias);
+  void mulMipMapBias(float mipMapBias);
 
   /**
    * Configures `this` so, when evaluated, it transfers all attributes from the given

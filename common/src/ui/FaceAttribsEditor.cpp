@@ -251,6 +251,86 @@ void FaceAttribsEditor::colorValueChanged(const QString& /* text */)
   }
 }
 
+void FaceAttribsEditor::transparencyValueChanged(const double value)
+{
+  auto document = kdl::mem_lock(m_document);
+  if (!document->hasAnySelectedBrushFaces())
+  {
+    return;
+  }
+
+  auto request = mdl::ChangeBrushFaceAttributesRequest{};
+  request.setTransparencyValue(int(value));
+  if (!document->setFaceAttributes(request))
+  {
+    updateControls();
+  }
+}
+
+void FaceAttribsEditor::reflectivityScaleChanged(const double value)
+{
+  auto document = kdl::mem_lock(m_document);
+  if (!document->hasAnySelectedBrushFaces())
+  {
+    return;
+  }
+
+  auto request = mdl::ChangeBrushFaceAttributesRequest{};
+  request.setReflectivityScale(float(value));
+  if (!document->setFaceAttributes(request))
+  {
+    updateControls();
+  }
+}
+
+void FaceAttribsEditor::xLightMapScaleChanged(const double value)
+{
+  auto document = kdl::mem_lock(m_document);
+  if (!document->hasAnySelectedBrushFaces())
+  {
+    return;
+  }
+
+  auto request = mdl::ChangeBrushFaceAttributesRequest{};
+  request.setXLightMapScale(float(value));
+  if (!document->setFaceAttributes(request))
+  {
+    updateControls();
+  }
+}
+void FaceAttribsEditor::yLightMapScaleChanged(const double value)
+{
+  auto document = kdl::mem_lock(m_document);
+  if (!document->hasAnySelectedBrushFaces())
+  {
+    return;
+  }
+
+  auto request = mdl::ChangeBrushFaceAttributesRequest{};
+  request.setYLightMapScale(float(value));
+  if (!document->setFaceAttributes(request))
+  {
+    updateControls();
+  }
+}
+
+
+void FaceAttribsEditor::mipMapBiasChanged(const double value)
+{
+  auto document = kdl::mem_lock(m_document);
+  if (!document->hasAnySelectedBrushFaces())
+  {
+    return;
+  }
+
+  auto request = mdl::ChangeBrushFaceAttributesRequest{};
+  request.setMipMapBias(float(value));
+  if (!document->setFaceAttributes(request))
+  {
+    updateControls();
+  }
+}
+
 void FaceAttribsEditor::surfaceFlagsUnset()
 {
   auto document = kdl::mem_lock(m_document);
@@ -309,6 +389,86 @@ void FaceAttribsEditor::colorValueUnset()
 
   auto request = mdl::ChangeBrushFaceAttributesRequest{};
   request.setColor(std::nullopt);
+  if (!document->setFaceAttributes(request))
+  {
+    updateControls();
+  }
+}
+
+void FaceAttribsEditor::transparencyValueUnset()
+{
+  auto document = kdl::mem_lock(m_document);
+  if (!document->hasAnySelectedBrushFaces())
+  {
+    return;
+  }
+
+  auto request = mdl::ChangeBrushFaceAttributesRequest{};
+  request.setTransparencyValue(std::nullopt);
+  if (!document->setFaceAttributes(request))
+  {
+    updateControls();
+  }
+}
+
+void FaceAttribsEditor::reflectivityScaleUnset()
+{
+  auto document = kdl::mem_lock(m_document);
+  if (!document->hasAnySelectedBrushFaces())
+  {
+    return;
+  }
+
+  auto request = mdl::ChangeBrushFaceAttributesRequest{};
+  request.setReflectivityScale(std::nullopt);
+  if (!document->setFaceAttributes(request))
+  {
+    updateControls();
+  }
+}
+
+void FaceAttribsEditor::xLightMapScaleUnset()
+{
+  auto document = kdl::mem_lock(m_document);
+  if (!document->hasAnySelectedBrushFaces())
+  {
+    return;
+  }
+
+  auto request = mdl::ChangeBrushFaceAttributesRequest{};
+  request.setXLightMapScale(std::nullopt);
+  if (!document->setFaceAttributes(request))
+  {
+    updateControls();
+  }
+}
+
+void FaceAttribsEditor::yLightMapScaleUnset()
+{
+  auto document = kdl::mem_lock(m_document);
+  if (!document->hasAnySelectedBrushFaces())
+  {
+    return;
+  }
+
+  auto request = mdl::ChangeBrushFaceAttributesRequest{};
+  request.setYLightMapScale(std::nullopt);
+  if (!document->setFaceAttributes(request))
+  {
+    updateControls();
+  }
+}
+
+void FaceAttribsEditor::mipMapBiasUnset()
+{
+  auto document = kdl::mem_lock(m_document);
+  if (!document->hasAnySelectedBrushFaces())
+  {
+    return;
+  }
+
+  auto request = mdl::ChangeBrushFaceAttributesRequest{};
+  request.setMipMapBias(std::nullopt);
   if (!document->setFaceAttributes(request))
   {
     updateControls();
@@ -418,6 +578,61 @@ void FaceAttribsEditor::createGui(GLContextManager& contextManager)
   m_colorUnsetButton = createBitmapButton("ResetUV.svg", tr("Unset color"));
   m_colorEditorLayout = createUnsetButtonLayout(m_colorEditor, m_colorUnsetButton);
 
+  m_transparencyValueLabel = new QLabel{"Transparency"};
+  makeEmphasized(m_transparencyValueLabel);
+  m_transparencyValueEditor = new SpinControl{};
+  m_transparencyValueEditor->setRange(0, 255);
+  m_transparencyValueEditor->setIncrements(1.0, 10.0, 100.0);
+  m_transparencyValueEditor->setDigits(0, 6);
+  m_transparencyValueUnsetButton =
+    createBitmapButton("ResetUV.svg", tr("Unset transparency value"));
+  m_transparencyValueEditorLayout =
+    createUnsetButtonLayout(m_transparencyValueEditor, m_transparencyValueUnsetButton);
+
+  m_reflectivityScaleLabel = new QLabel{"Reflectivity"};
+  makeEmphasized(m_reflectivityScaleLabel);
+  m_reflectivityScaleEditor = new SpinControl{};
+  m_reflectivityScaleEditor->setRange(min, max);
+  m_reflectivityScaleEditor->setIncrements(0.1, 0.25, 0.5);
+  m_reflectivityScaleEditor->setDigits(0, 6);
+  m_reflectivityScaleUnsetButton =
+    createBitmapButton("ResetUV.svg", tr("Unset reflectivity scale"));
+  m_reflectivityScaleEditorLayout =
+    createUnsetButtonLayout(m_reflectivityScaleEditor, m_reflectivityScaleUnsetButton);
+
+  m_xLightMapScaleLabel = new QLabel{"X Light Map"};
+  makeEmphasized(m_xLightMapScaleLabel);
+  m_xLightMapScaleEditor = new SpinControl{};
+  m_xLightMapScaleEditor->setRange(min, max);
+  m_xLightMapScaleEditor->setIncrements(0.1, 0.25, 0.5);
+  m_xLightMapScaleEditor->setDigits(0, 6);
+  m_xLightMapScaleUnsetButton =
+    createBitmapButton("ResetUV.svg", tr("Unset X Light Map scale"));
+  m_xLightMapScaleEditorLayout =
+    createUnsetButtonLayout(m_xLightMapScaleEditor, m_xLightMapScaleUnsetButton);
+
+  m_yLightMapScaleLabel = new QLabel{"Y Light Map"};
+  makeEmphasized(m_yLightMapScaleLabel);
+  m_yLightMapScaleEditor = new SpinControl{};
+  m_yLightMapScaleEditor->setRange(min, max);
+  m_yLightMapScaleEditor->setIncrements(0.1, 0.25, 0.5);
+  m_yLightMapScaleEditor->setDigits(0, 6);
+  m_yLightMapScaleUnsetButton =
+    createBitmapButton("ResetUV.svg", tr("Unset Y Light Map scale"));
+  m_yLightMapScaleEditorLayout =
+    createUnsetButtonLayout(m_yLightMapScaleEditor, m_yLightMapScaleUnsetButton);
+
+  m_mipMapBiasLabel = new QLabel{"MipMap Bias"};
+  makeEmphasized(m_mipMapBiasLabel);
+  m_mipMapBiasEditor = new SpinControl{};
+  m_mipMapBiasEditor->setRange(min, max);
+  m_mipMapBiasEditor->setIncrements(0.1, 0.25, 0.5);
+  m_mipMapBiasEditor->setDigits(0, 6);
+  m_mipMapBiasUnsetButton =
+    createBitmapButton("ResetUV.svg", tr("Unset mipmap bias scale"));
+  m_mipMapBiasEditorLayout =
+    createUnsetButtonLayout(m_mipMapBiasEditor, m_mipMapBiasUnsetButton);
+
   const Qt::Alignment LabelFlags = Qt::AlignVCenter | Qt::AlignRight;
   const Qt::Alignment ValueFlags = Qt::AlignVCenter;
 
@@ -473,6 +688,25 @@ void FaceAttribsEditor::createGui(GLContextManager& contextManager)
 
   faceAttribsLayout->addWidget(m_colorLabel, r, c++, LabelFlags);
   faceAttribsLayout->addWidget(m_colorEditorLayout, r, c++, 1, 3);
+  ++r;
+  c = 0;
+
+  faceAttribsLayout->addWidget(m_xLightMapScaleLabel, r, c++, LabelFlags);
+  faceAttribsLayout->addWidget(m_xLightMapScaleEditorLayout, r, c++);
+  faceAttribsLayout->addWidget(m_yLightMapScaleLabel, r, c++, LabelFlags);
+  faceAttribsLayout->addWidget(m_yLightMapScaleEditorLayout, r, c++);
+  ++r;
+  c = 0;
+
+  faceAttribsLayout->addWidget(m_transparencyValueLabel, r, c++, LabelFlags);
+  faceAttribsLayout->addWidget(m_transparencyValueEditorLayout, r, c++);
+  faceAttribsLayout->addWidget(m_reflectivityScaleLabel, r, c++, LabelFlags);
+  faceAttribsLayout->addWidget(m_reflectivityScaleEditorLayout, r, c++);
+  ++r;
+  c = 0;
+
+  faceAttribsLayout->addWidget(m_mipMapBiasLabel, r, c++, LabelFlags);
+  faceAttribsLayout->addWidget(m_mipMapBiasEditorLayout, r, c++);
   ++r;
   c = 0;
 
@@ -534,6 +768,31 @@ void FaceAttribsEditor::bindEvents()
   connect(
     m_colorEditor, &QLineEdit::textEdited, this, &FaceAttribsEditor::colorValueChanged);
   connect(
+    m_transparencyValueEditor,
+    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+    this,
+    &FaceAttribsEditor::transparencyValueChanged);
+  connect(
+    m_reflectivityScaleEditor,
+    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+    this,
+    &FaceAttribsEditor::reflectivityScaleChanged);
+  connect(
+    m_xLightMapScaleEditor,
+    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+    this,
+    &FaceAttribsEditor::xLightMapScaleChanged);
+  connect(
+    m_yLightMapScaleEditor,
+    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+    this,
+    &FaceAttribsEditor::yLightMapScaleChanged);
+  connect(
+    m_mipMapBiasEditor,
+    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+    this,
+    &FaceAttribsEditor::mipMapBiasChanged);
+  connect(
     m_surfaceValueUnsetButton,
     &QAbstractButton::clicked,
     this,
@@ -553,6 +812,31 @@ void FaceAttribsEditor::bindEvents()
     &QAbstractButton::clicked,
     this,
     &FaceAttribsEditor::colorValueUnset);
+  connect(
+    m_transparencyValueUnsetButton,
+    &QAbstractButton::clicked,
+    this,
+    &FaceAttribsEditor::transparencyValueUnset);
+  connect(
+    m_reflectivityScaleUnsetButton,
+    &QAbstractButton::clicked,
+    this,
+    &FaceAttribsEditor::reflectivityScaleUnset);
+  connect(
+    m_xLightMapScaleUnsetButton,
+    &QAbstractButton::clicked,
+    this,
+    &FaceAttribsEditor::xLightMapScaleUnset);
+  connect(
+    m_yLightMapScaleUnsetButton,
+    &QAbstractButton::clicked,
+    this,
+    &FaceAttribsEditor::yLightMapScaleUnset);
+  connect(
+    m_mipMapBiasUnsetButton,
+    &QAbstractButton::clicked,
+    this,
+    &FaceAttribsEditor::mipMapBiasUnset);
   connect(
     m_updateControlsSignalDelayer,
     &SignalDelayer::processSignal,
@@ -642,6 +926,11 @@ void FaceAttribsEditor::updateControls()
   const auto blockSurfaceFlagsEditor = QSignalBlocker{m_surfaceFlagsEditor};
   const auto blockContentFlagsEditor = QSignalBlocker{m_contentFlagsEditor};
   const auto blockColorEditor = QSignalBlocker{m_colorEditor};
+  const auto blockTransparencyEditor = QSignalBlocker{m_transparencyValueEditor};
+  const auto blockReflectivityScaleEditor = QSignalBlocker{m_reflectivityScaleEditor};
+  const auto blockXLightMapScaleEditor = QSignalBlocker{m_xLightMapScaleEditor};
+  const auto blockYLightMapScaleEditor = QSignalBlocker{m_yLightMapScaleEditor};
+  const auto blockMipMapBiasEditor = QSignalBlocker{m_mipMapBiasEditor};
 
   if (hasSurfaceFlags())
   {
@@ -674,6 +963,15 @@ void FaceAttribsEditor::updateControls()
     hideColorAttribEditor();
   }
 
+  if (hasGenesisAttribs())
+  {
+    showGenesisAttribsEditor();
+  }
+  else
+  {
+    hideGenesisAttribsEditor();
+  }
+
   const auto faceHandles = kdl::mem_lock(m_document)->allSelectedBrushFaces();
   if (!faceHandles.empty())
   {
@@ -685,6 +983,11 @@ void FaceAttribsEditor::updateControls()
     auto yScaleMulti = false;
     auto surfaceValueMulti = false;
     auto colorValueMulti = false;
+    auto transparencyValueMulti = false;
+    auto reflectivityScaleMulti = false;
+    auto xLightMapScaleMulti = false;
+    auto yLightMapScaleMulti = false;
+    auto mipMapBiasMulti = false;
 
     const auto& firstFace = faceHandles[0].face();
     const auto& materialName = firstFace.attributes().materialName();
@@ -699,10 +1002,24 @@ void FaceAttribsEditor::updateControls()
     auto mixedSurfaceContents = 0;
     const auto surfaceValue = firstFace.resolvedSurfaceValue();
     const auto colorValue = firstFace.attributes().color();
+    const auto transparencyValue = firstFace.resolvedTransparencyValue();
+    const auto reflectivityScale = firstFace.resolvedReflectivityScale();
+    const auto xLightMapScale = firstFace.resolvedXLightMapScale();
+    const auto yLightMapScale = firstFace.resolvedYLightMapScale();
+    const auto mipMapBias = firstFace.resolvedMipMapBias();
     auto hasSurfaceValue = firstFace.attributes().surfaceValue().has_value();
     auto hasSurfaceFlags = firstFace.attributes().surfaceFlags().has_value();
     auto hasSurfaceContents = firstFace.attributes().surfaceContents().has_value();
     auto hasColorValue = firstFace.attributes().hasColor();
+    auto hasTransparencyValue =
+      firstFace.attributes().transparencyValue().value_or(255) != 255;
+    auto hasReflectivityScale =
+      firstFace.attributes().reflectivityScale().value_or(1.0) != 1.0f;
+    auto hasXLightMapScale =
+      firstFace.attributes().xLightMapScale().value_or(1.0) != 1.0f;
+    auto hasYLightMapScale =
+      firstFace.attributes().yLightMapScale().value_or(1.0) != 1.0f;
+    auto hasMipMapBias = firstFace.attributes().mipMapBias().value_or(1.0) != 1.0f;
 
     for (size_t i = 1; i < faceHandles.size(); i++)
     {
@@ -715,10 +1032,20 @@ void FaceAttribsEditor::updateControls()
       yScaleMulti |= (yScale != face.attributes().yScale());
       surfaceValueMulti |= (surfaceValue != face.resolvedSurfaceValue());
       colorValueMulti |= (colorValue != face.attributes().color());
+      transparencyValueMulti |= (transparencyValue != face.resolvedTransparencyValue());
+      reflectivityScaleMulti |= (reflectivityScale != face.resolvedReflectivityScale());
+      xLightMapScaleMulti |= (xLightMapScale != face.resolvedXLightMapScale());
+      yLightMapScaleMulti |= (yLightMapScale != face.resolvedYLightMapScale());
+      mipMapBiasMulti |= (mipMapBias != face.resolvedMipMapBias());
       hasSurfaceValue |= face.attributes().surfaceValue().has_value();
       hasSurfaceFlags |= face.attributes().surfaceFlags().has_value();
       hasSurfaceContents |= face.attributes().surfaceContents().has_value();
       hasColorValue |= face.attributes().hasColor();
+      hasTransparencyValue = face.attributes().transparencyValue().value_or(255) != 255;
+      hasReflectivityScale = face.attributes().reflectivityScale().value_or(1.0) != 1.0f;
+      hasXLightMapScale = face.attributes().xLightMapScale().value_or(1.0) != 1.0f;
+      hasYLightMapScale = face.attributes().yLightMapScale().value_or(1.0) != 1.0f;
+      hasMipMapBias = face.attributes().mipMapBias().value_or(1.0) != 1.0f;
 
       combineFlags(
         sizeof(int) * 8, face.resolvedSurfaceFlags(), setSurfaceFlags, mixedSurfaceFlags);
@@ -738,6 +1065,11 @@ void FaceAttribsEditor::updateControls()
     m_surfaceFlagsEditor->setEnabled(true);
     m_contentFlagsEditor->setEnabled(true);
     m_colorEditor->setEnabled(true);
+    m_transparencyValueEditor->setEnabled(true);
+    m_reflectivityScaleEditor->setEnabled(true);
+    m_xLightMapScaleEditor->setEnabled(true);
+    m_yLightMapScaleEditor->setEnabled(true);
+    m_mipMapBiasEditor->setEnabled(true);
 
     if (materialMulti)
     {
@@ -779,6 +1111,14 @@ void FaceAttribsEditor::updateControls()
     setValueOrMulti(m_xScaleEditor, xScaleMulti, double(xScale));
     setValueOrMulti(m_yScaleEditor, yScaleMulti, double(yScale));
     setValueOrMulti(m_surfaceValueEditor, surfaceValueMulti, double(surfaceValue));
+    setValueOrMulti(
+      m_transparencyValueEditor, transparencyValueMulti, double(transparencyValue));
+    setValueOrMulti(
+      m_reflectivityScaleEditor, reflectivityScaleMulti, double(reflectivityScale));
+    setValueOrMulti(m_xLightMapScaleEditor, xLightMapScaleMulti, double(xLightMapScale));
+    setValueOrMulti(m_yLightMapScaleEditor, yLightMapScaleMulti, double(yLightMapScale));
+    setValueOrMulti(m_mipMapBiasEditor, mipMapBiasMulti, double(mipMapBias));
+
     if (hasColorValue)
     {
       if (colorValueMulti)
@@ -797,13 +1137,20 @@ void FaceAttribsEditor::updateControls()
       m_colorEditor->setPlaceholderText("");
       m_colorEditor->setText("");
     }
+
     m_surfaceFlagsEditor->setFlagValue(setSurfaceFlags, mixedSurfaceFlags);
     m_contentFlagsEditor->setFlagValue(setSurfaceContents, mixedSurfaceContents);
+
 
     m_surfaceValueUnsetButton->setEnabled(hasSurfaceValue);
     m_surfaceFlagsUnsetButton->setEnabled(hasSurfaceFlags);
     m_contentFlagsUnsetButton->setEnabled(hasSurfaceContents);
     m_colorUnsetButton->setEnabled(hasColorValue);
+    m_transparencyValueUnsetButton->setEnabled(hasTransparencyValue);
+    m_reflectivityScaleUnsetButton->setEnabled(hasReflectivityScale);
+    m_xLightMapScaleUnsetButton->setEnabled(hasXLightMapScale);
+    m_yLightMapScaleUnsetButton->setEnabled(hasYLightMapScale);
+    m_mipMapBiasUnsetButton->setEnabled(hasMipMapBias);
   }
   else
   {
@@ -813,6 +1160,11 @@ void FaceAttribsEditor::updateControls()
     disableAndSetPlaceholder(m_yScaleEditor, "n/a");
     disableAndSetPlaceholder(m_rotationEditor, "n/a");
     disableAndSetPlaceholder(m_surfaceValueEditor, "n/a");
+    disableAndSetPlaceholder(m_transparencyValueEditor, "n/a");
+    disableAndSetPlaceholder(m_reflectivityScaleEditor, "n/a");
+    disableAndSetPlaceholder(m_xLightMapScaleEditor, "n/a");
+    disableAndSetPlaceholder(m_yLightMapScaleEditor, "n/a");
+    disableAndSetPlaceholder(m_mipMapBiasEditor, "n/a");
 
     m_surfaceFlagsEditor->setEnabled(false);
     m_contentFlagsEditor->setEnabled(false);
@@ -820,10 +1172,21 @@ void FaceAttribsEditor::updateControls()
     m_colorEditor->setPlaceholderText("n/a");
     m_colorEditor->setEnabled(false);
 
+    m_transparencyValueEditor->setEnabled(false);
+    m_reflectivityScaleEditor->setEnabled(false);
+    m_xLightMapScaleEditor->setEnabled(false);
+    m_yLightMapScaleEditor->setEnabled(false);
+    m_mipMapBiasEditor->setEnabled(false);
+
     m_surfaceValueUnsetButton->setEnabled(false);
     m_surfaceFlagsUnsetButton->setEnabled(false);
     m_contentFlagsUnsetButton->setEnabled(false);
     m_colorUnsetButton->setEnabled(false);
+    m_transparencyValueUnsetButton->setEnabled(false);
+    m_reflectivityScaleUnsetButton->setEnabled(false);
+    m_xLightMapScaleUnsetButton->setEnabled(false);
+    m_yLightMapScaleUnsetButton->setEnabled(false);
+    m_mipMapBiasUnsetButton->setEnabled(false);
   }
 }
 
@@ -890,6 +1253,45 @@ void FaceAttribsEditor::hideColorAttribEditor()
 {
   m_colorLabel->hide();
   m_colorEditorLayout->hide();
+}
+
+bool FaceAttribsEditor::hasGenesisAttribs() const
+{
+  auto document = kdl::mem_lock(m_document);
+  return document->world()->mapFormat() == mdl::MapFormat::Genesis3D;
+}
+
+
+void FaceAttribsEditor::showGenesisAttribsEditor()
+{
+  m_transparencyValueLabel->show();
+  m_transparencyValueEditorLayout->show();
+  m_reflectivityScaleLabel->show();
+  m_reflectivityScaleEditorLayout->show();
+  m_xLightMapScaleLabel->show();
+  m_xLightMapScaleEditorLayout->show();
+  m_yLightMapScaleLabel->show();
+  m_yLightMapScaleEditorLayout->show();
+  m_mipMapBiasLabel->show();
+  m_mipMapBiasEditorLayout->show();
+  m_surfaceValueLabel->setText(tr("Light Value"));
+  m_surfaceValueUnsetButton->setToolTip(tr("Unset light value"));
+}
+
+void FaceAttribsEditor::hideGenesisAttribsEditor()
+{
+  m_transparencyValueLabel->hide();
+  m_transparencyValueEditorLayout->hide();
+  m_reflectivityScaleLabel->hide();
+  m_reflectivityScaleEditorLayout->hide();
+  m_xLightMapScaleLabel->hide();
+  m_xLightMapScaleEditorLayout->hide();
+  m_yLightMapScaleLabel->hide();
+  m_yLightMapScaleEditorLayout->hide();
+  m_mipMapBiasLabel->hide();
+  m_mipMapBiasEditorLayout->hide();
+  m_surfaceValueLabel->setText(tr("Value"));
+  m_surfaceValueUnsetButton->setToolTip(tr("Unset value"));
 }
 
 namespace
