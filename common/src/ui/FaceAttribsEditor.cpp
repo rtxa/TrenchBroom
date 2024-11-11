@@ -283,7 +283,7 @@ void FaceAttribsEditor::reflectivityScaleChanged(const double value)
   }
 }
 
-void FaceAttribsEditor::xLightMapScaleChanged(const double value)
+void FaceAttribsEditor::lightMapScaleChanged(const double value)
 {
   auto document = kdl::mem_lock(m_document);
   if (!document->hasAnySelectedBrushFaces())
@@ -293,27 +293,12 @@ void FaceAttribsEditor::xLightMapScaleChanged(const double value)
 
   auto request = mdl::ChangeBrushFaceAttributesRequest{};
   request.setXLightMapScale(float(value));
-  if (!document->setFaceAttributes(request))
-  {
-    updateControls();
-  }
-}
-void FaceAttribsEditor::yLightMapScaleChanged(const double value)
-{
-  auto document = kdl::mem_lock(m_document);
-  if (!document->hasAnySelectedBrushFaces())
-  {
-    return;
-  }
-
-  auto request = mdl::ChangeBrushFaceAttributesRequest{};
   request.setYLightMapScale(float(value));
   if (!document->setFaceAttributes(request))
   {
     updateControls();
   }
 }
-
 
 void FaceAttribsEditor::mipMapBiasChanged(const double value)
 {
@@ -427,7 +412,7 @@ void FaceAttribsEditor::reflectivityScaleUnset()
   }
 }
 
-void FaceAttribsEditor::xLightMapScaleUnset()
+void FaceAttribsEditor::lightMapScaleUnset()
 {
   auto document = kdl::mem_lock(m_document);
   if (!document->hasAnySelectedBrushFaces())
@@ -437,21 +422,6 @@ void FaceAttribsEditor::xLightMapScaleUnset()
 
   auto request = mdl::ChangeBrushFaceAttributesRequest{};
   request.setXLightMapScale(std::nullopt);
-  if (!document->setFaceAttributes(request))
-  {
-    updateControls();
-  }
-}
-
-void FaceAttribsEditor::yLightMapScaleUnset()
-{
-  auto document = kdl::mem_lock(m_document);
-  if (!document->hasAnySelectedBrushFaces())
-  {
-    return;
-  }
-
-  auto request = mdl::ChangeBrushFaceAttributesRequest{};
   request.setYLightMapScale(std::nullopt);
   if (!document->setFaceAttributes(request))
   {
@@ -600,27 +570,16 @@ void FaceAttribsEditor::createGui(GLContextManager& contextManager)
   m_reflectivityScaleEditorLayout =
     createUnsetButtonLayout(m_reflectivityScaleEditor, m_reflectivityScaleUnsetButton);
 
-  m_xLightMapScaleLabel = new QLabel{"X Light Map"};
-  makeEmphasized(m_xLightMapScaleLabel);
-  m_xLightMapScaleEditor = new SpinControl{};
-  m_xLightMapScaleEditor->setRange(min, max);
-  m_xLightMapScaleEditor->setIncrements(0.1, 0.25, 0.5);
-  m_xLightMapScaleEditor->setDigits(0, 6);
-  m_xLightMapScaleUnsetButton =
-    createBitmapButton("ResetUV.svg", tr("Unset X Light Map scale"));
-  m_xLightMapScaleEditorLayout =
-    createUnsetButtonLayout(m_xLightMapScaleEditor, m_xLightMapScaleUnsetButton);
-
-  m_yLightMapScaleLabel = new QLabel{"Y Light Map"};
-  makeEmphasized(m_yLightMapScaleLabel);
-  m_yLightMapScaleEditor = new SpinControl{};
-  m_yLightMapScaleEditor->setRange(min, max);
-  m_yLightMapScaleEditor->setIncrements(0.1, 0.25, 0.5);
-  m_yLightMapScaleEditor->setDigits(0, 6);
-  m_yLightMapScaleUnsetButton =
-    createBitmapButton("ResetUV.svg", tr("Unset Y Light Map scale"));
-  m_yLightMapScaleEditorLayout =
-    createUnsetButtonLayout(m_yLightMapScaleEditor, m_yLightMapScaleUnsetButton);
+  m_lightMapScaleLabel = new QLabel{"Light Map"};
+  makeEmphasized(m_lightMapScaleLabel);
+  m_lightMapScaleEditor = new SpinControl{};
+  m_lightMapScaleEditor->setRange(min, max);
+  m_lightMapScaleEditor->setIncrements(0.1, 0.25, 0.5);
+  m_lightMapScaleEditor->setDigits(0, 6);
+  m_lightMapScaleUnsetButton =
+    createBitmapButton("ResetUV.svg", tr("Unset light map scale"));
+  m_lightMapScaleEditorLayout =
+    createUnsetButtonLayout(m_lightMapScaleEditor, m_lightMapScaleUnsetButton);
 
   m_mipMapBiasLabel = new QLabel{"MipMap Bias"};
   makeEmphasized(m_mipMapBiasLabel);
@@ -691,13 +650,6 @@ void FaceAttribsEditor::createGui(GLContextManager& contextManager)
   ++r;
   c = 0;
 
-  faceAttribsLayout->addWidget(m_xLightMapScaleLabel, r, c++, LabelFlags);
-  faceAttribsLayout->addWidget(m_xLightMapScaleEditorLayout, r, c++);
-  faceAttribsLayout->addWidget(m_yLightMapScaleLabel, r, c++, LabelFlags);
-  faceAttribsLayout->addWidget(m_yLightMapScaleEditorLayout, r, c++);
-  ++r;
-  c = 0;
-
   faceAttribsLayout->addWidget(m_transparencyValueLabel, r, c++, LabelFlags);
   faceAttribsLayout->addWidget(m_transparencyValueEditorLayout, r, c++);
   faceAttribsLayout->addWidget(m_reflectivityScaleLabel, r, c++, LabelFlags);
@@ -707,6 +659,8 @@ void FaceAttribsEditor::createGui(GLContextManager& contextManager)
 
   faceAttribsLayout->addWidget(m_mipMapBiasLabel, r, c++, LabelFlags);
   faceAttribsLayout->addWidget(m_mipMapBiasEditorLayout, r, c++);
+  faceAttribsLayout->addWidget(m_lightMapScaleLabel, r, c++, LabelFlags);
+  faceAttribsLayout->addWidget(m_lightMapScaleEditorLayout, r, c++);
   ++r;
   c = 0;
 
@@ -778,15 +732,10 @@ void FaceAttribsEditor::bindEvents()
     this,
     &FaceAttribsEditor::reflectivityScaleChanged);
   connect(
-    m_xLightMapScaleEditor,
+    m_lightMapScaleEditor,
     QOverload<double>::of(&QDoubleSpinBox::valueChanged),
     this,
-    &FaceAttribsEditor::xLightMapScaleChanged);
-  connect(
-    m_yLightMapScaleEditor,
-    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-    this,
-    &FaceAttribsEditor::yLightMapScaleChanged);
+    &FaceAttribsEditor::lightMapScaleChanged);
   connect(
     m_mipMapBiasEditor,
     QOverload<double>::of(&QDoubleSpinBox::valueChanged),
@@ -823,15 +772,10 @@ void FaceAttribsEditor::bindEvents()
     this,
     &FaceAttribsEditor::reflectivityScaleUnset);
   connect(
-    m_xLightMapScaleUnsetButton,
+    m_lightMapScaleUnsetButton,
     &QAbstractButton::clicked,
     this,
-    &FaceAttribsEditor::xLightMapScaleUnset);
-  connect(
-    m_yLightMapScaleUnsetButton,
-    &QAbstractButton::clicked,
-    this,
-    &FaceAttribsEditor::yLightMapScaleUnset);
+    &FaceAttribsEditor::lightMapScaleUnset);
   connect(
     m_mipMapBiasUnsetButton,
     &QAbstractButton::clicked,
@@ -928,8 +872,7 @@ void FaceAttribsEditor::updateControls()
   const auto blockColorEditor = QSignalBlocker{m_colorEditor};
   const auto blockTransparencyEditor = QSignalBlocker{m_transparencyValueEditor};
   const auto blockReflectivityScaleEditor = QSignalBlocker{m_reflectivityScaleEditor};
-  const auto blockXLightMapScaleEditor = QSignalBlocker{m_xLightMapScaleEditor};
-  const auto blockYLightMapScaleEditor = QSignalBlocker{m_yLightMapScaleEditor};
+  const auto blockXLightMapScaleEditor = QSignalBlocker{m_lightMapScaleEditor};
   const auto blockMipMapBiasEditor = QSignalBlocker{m_mipMapBiasEditor};
 
   if (hasSurfaceFlags())
@@ -1067,8 +1010,7 @@ void FaceAttribsEditor::updateControls()
     m_colorEditor->setEnabled(true);
     m_transparencyValueEditor->setEnabled(true);
     m_reflectivityScaleEditor->setEnabled(true);
-    m_xLightMapScaleEditor->setEnabled(true);
-    m_yLightMapScaleEditor->setEnabled(true);
+    m_lightMapScaleEditor->setEnabled(true);
     m_mipMapBiasEditor->setEnabled(true);
 
     if (materialMulti)
@@ -1115,8 +1057,7 @@ void FaceAttribsEditor::updateControls()
       m_transparencyValueEditor, transparencyValueMulti, double(transparencyValue));
     setValueOrMulti(
       m_reflectivityScaleEditor, reflectivityScaleMulti, double(reflectivityScale));
-    setValueOrMulti(m_xLightMapScaleEditor, xLightMapScaleMulti, double(xLightMapScale));
-    setValueOrMulti(m_yLightMapScaleEditor, yLightMapScaleMulti, double(yLightMapScale));
+    setValueOrMulti(m_lightMapScaleEditor, xLightMapScaleMulti, double(xLightMapScale));
     setValueOrMulti(m_mipMapBiasEditor, mipMapBiasMulti, double(mipMapBias));
 
     if (hasColorValue)
@@ -1148,8 +1089,7 @@ void FaceAttribsEditor::updateControls()
     m_colorUnsetButton->setEnabled(hasColorValue);
     m_transparencyValueUnsetButton->setEnabled(hasTransparencyValue);
     m_reflectivityScaleUnsetButton->setEnabled(hasReflectivityScale);
-    m_xLightMapScaleUnsetButton->setEnabled(hasXLightMapScale);
-    m_yLightMapScaleUnsetButton->setEnabled(hasYLightMapScale);
+    m_lightMapScaleUnsetButton->setEnabled(hasXLightMapScale);
     m_mipMapBiasUnsetButton->setEnabled(hasMipMapBias);
   }
   else
@@ -1162,8 +1102,7 @@ void FaceAttribsEditor::updateControls()
     disableAndSetPlaceholder(m_surfaceValueEditor, "n/a");
     disableAndSetPlaceholder(m_transparencyValueEditor, "n/a");
     disableAndSetPlaceholder(m_reflectivityScaleEditor, "n/a");
-    disableAndSetPlaceholder(m_xLightMapScaleEditor, "n/a");
-    disableAndSetPlaceholder(m_yLightMapScaleEditor, "n/a");
+    disableAndSetPlaceholder(m_lightMapScaleEditor, "n/a");
     disableAndSetPlaceholder(m_mipMapBiasEditor, "n/a");
 
     m_surfaceFlagsEditor->setEnabled(false);
@@ -1174,8 +1113,7 @@ void FaceAttribsEditor::updateControls()
 
     m_transparencyValueEditor->setEnabled(false);
     m_reflectivityScaleEditor->setEnabled(false);
-    m_xLightMapScaleEditor->setEnabled(false);
-    m_yLightMapScaleEditor->setEnabled(false);
+    m_lightMapScaleEditor->setEnabled(false);
     m_mipMapBiasEditor->setEnabled(false);
 
     m_surfaceValueUnsetButton->setEnabled(false);
@@ -1184,8 +1122,7 @@ void FaceAttribsEditor::updateControls()
     m_colorUnsetButton->setEnabled(false);
     m_transparencyValueUnsetButton->setEnabled(false);
     m_reflectivityScaleUnsetButton->setEnabled(false);
-    m_xLightMapScaleUnsetButton->setEnabled(false);
-    m_yLightMapScaleUnsetButton->setEnabled(false);
+    m_lightMapScaleUnsetButton->setEnabled(false);
     m_mipMapBiasUnsetButton->setEnabled(false);
   }
 }
@@ -1268,10 +1205,8 @@ void FaceAttribsEditor::showGenesisAttribsEditor()
   m_transparencyValueEditorLayout->show();
   m_reflectivityScaleLabel->show();
   m_reflectivityScaleEditorLayout->show();
-  m_xLightMapScaleLabel->show();
-  m_xLightMapScaleEditorLayout->show();
-  m_yLightMapScaleLabel->show();
-  m_yLightMapScaleEditorLayout->show();
+  m_lightMapScaleLabel->show();
+  m_lightMapScaleEditorLayout->show();
   m_mipMapBiasLabel->show();
   m_mipMapBiasEditorLayout->show();
   m_surfaceValueLabel->setText(tr("Light Value"));
@@ -1284,10 +1219,8 @@ void FaceAttribsEditor::hideGenesisAttribsEditor()
   m_transparencyValueEditorLayout->hide();
   m_reflectivityScaleLabel->hide();
   m_reflectivityScaleEditorLayout->hide();
-  m_xLightMapScaleLabel->hide();
-  m_xLightMapScaleEditorLayout->hide();
-  m_yLightMapScaleLabel->hide();
-  m_yLightMapScaleEditorLayout->hide();
+  m_lightMapScaleLabel->hide();
+  m_lightMapScaleEditorLayout->hide();
   m_mipMapBiasLabel->hide();
   m_mipMapBiasEditorLayout->hide();
   m_surfaceValueLabel->setText(tr("Value"));

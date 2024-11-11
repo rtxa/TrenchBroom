@@ -90,15 +90,10 @@ private:
   SpinControl* m_reflectivityScaleEditor = nullptr;
   QAbstractButton* m_reflectivityScaleUnsetButton = nullptr;
 
-  QLabel* m_xLightMapScaleLabel = nullptr;
-  QWidget* m_xLightMapScaleEditorLayout = nullptr;
-  SpinControl* m_xLightMapScaleEditor = nullptr;
-  QAbstractButton* m_xLightMapScaleUnsetButton = nullptr;
-
-  QLabel* m_yLightMapScaleLabel = nullptr;
-  QWidget* m_yLightMapScaleEditorLayout = nullptr;
-  SpinControl* m_yLightMapScaleEditor = nullptr;
-  QAbstractButton* m_yLightMapScaleUnsetButton = nullptr;
+  QLabel* m_lightMapScaleLabel = nullptr;
+  QWidget* m_lightMapScaleEditorLayout = nullptr;
+  SpinControl* m_lightMapScaleEditor = nullptr;
+  QAbstractButton* m_lightMapScaleUnsetButton = nullptr;
 
   QLabel* m_mipMapBiasLabel = nullptr;
   QWidget* m_mipMapBiasEditorLayout = nullptr;
@@ -129,8 +124,7 @@ private:
   void colorValueChanged(const QString& text);
   void transparencyValueChanged(double value);
   void reflectivityScaleChanged(double value);
-  void xLightMapScaleChanged(double value);
-  void yLightMapScaleChanged(double value);
+  void lightMapScaleChanged(double value);
   void mipMapBiasChanged(double value);
   void surfaceFlagsUnset();
   void contentFlagsUnset();
@@ -138,8 +132,7 @@ private:
   void colorValueUnset();
   void transparencyValueUnset();
   void reflectivityScaleUnset();
-  void xLightMapScaleUnset();
-  void yLightMapScaleUnset();
+  void lightMapScaleUnset();
   void mipMapBiasUnset();
   void updateIncrements();
 
