@@ -27,6 +27,7 @@
 #include "io/PathMatcher.h"
 #include "io/ReadDdsTexture.h"
 #include "io/ReadFreeImageTexture.h"
+#include "io/ReadGeBmpTexture.h"
 #include "io/ReadM8Texture.h"
 #include "io/ReadMipTexture.h"
 #include "io/ReadWalTexture.h"
@@ -307,6 +308,13 @@ mdl::ResourceLoader<mdl::Texture> makeTextureResourceLoader(
                return readDdsTexture(reader);
              });
     }
+    else if (extension == ".gebmp")
+    {
+      return fs.openFile(path) | kdl::and_then([&](auto file) {
+               auto reader = file->reader().buffer();
+               return readGeBitmapTexture(reader);
+             });
+    }
     else if (isSupportedFreeImageExtension(extension))
     {
       return fs.openFile(path) | kdl::and_then([&](auto file) {
@@ -330,7 +338,8 @@ Result<mdl::Material> loadTextureMaterial(
   const auto wadFileName = kdl::path_length(texturePath) > 1
                              ? texturePath.parent_path().filename()
                              : std::filesystem::path{};
-  const auto isWad = kdl::path_to_lower(wadFileName.extension()) == ".wad";
+  const auto isWad = kdl::path_to_lower(wadFileName.extension()) == ".wad"
+                     || kdl::path_to_lower(wadFileName.extension()) == ".txl";
 
   const auto prefixLength = kdl::path_length(materialConfig.root) + (isWad ? 1 : 0);
   const auto pathMatcher = !materialConfig.extensions.empty()

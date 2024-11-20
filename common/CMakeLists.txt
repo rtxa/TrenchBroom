@@ -92,6 +92,7 @@ set(COMMON_SOURCE
         ${COMMON_SOURCE_DIR}/io/ReadM8Texture.cpp
         ${COMMON_SOURCE_DIR}/io/ReadMipTexture.cpp
         ${COMMON_SOURCE_DIR}/io/ReadWalTexture.cpp
+        ${COMMON_SOURCE_DIR}/io/ReadGeBmpTexture.cpp
         ${COMMON_SOURCE_DIR}/io/ResourceUtils.cpp
         ${COMMON_SOURCE_DIR}/io/SimpleParserStatus.cpp
         ${COMMON_SOURCE_DIR}/io/SkinLoader.cpp
@@ -101,6 +102,7 @@ set(COMMON_SOURCE
         ${COMMON_SOURCE_DIR}/io/TraversalMode.cpp
         ${COMMON_SOURCE_DIR}/io/VirtualFileSystem.cpp
         ${COMMON_SOURCE_DIR}/io/WadFileSystem.cpp
+        ${COMMON_SOURCE_DIR}/io/TxlFileSystem.cpp
         ${COMMON_SOURCE_DIR}/io/WorldReader.cpp
         ${COMMON_SOURCE_DIR}/io/ZipFileSystem.cpp
         ${COMMON_SOURCE_DIR}/Logger.cpp
@@ -589,6 +591,7 @@ set(COMMON_HEADER
         ${COMMON_SOURCE_DIR}/io/ReadM8Texture.h
         ${COMMON_SOURCE_DIR}/io/ReadMipTexture.h
         ${COMMON_SOURCE_DIR}/io/ReadWalTexture.h
+        ${COMMON_SOURCE_DIR}/io/ReadGeBmpTexture.h
         ${COMMON_SOURCE_DIR}/io/ResourceUtils.h
         ${COMMON_SOURCE_DIR}/io/SimpleParserStatus.h
         ${COMMON_SOURCE_DIR}/io/SkinLoader.h
@@ -600,6 +603,7 @@ set(COMMON_HEADER
         ${COMMON_SOURCE_DIR}/io/TraversalMode.h
         ${COMMON_SOURCE_DIR}/io/VirtualFileSystem.h
         ${COMMON_SOURCE_DIR}/io/WadFileSystem.h
+        ${COMMON_SOURCE_DIR}/io/TxlFileSystem.h
         ${COMMON_SOURCE_DIR}/io/WorldReader.h
         ${COMMON_SOURCE_DIR}/io/ZipFileSystem.h
         ${COMMON_SOURCE_DIR}/Logger.h

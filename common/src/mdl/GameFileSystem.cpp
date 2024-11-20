@@ -27,6 +27,7 @@
 #include "io/PathInfo.h"
 #include "io/SystemPaths.h"
 #include "io/TraversalMode.h"
+#include "io/TxlFileSystem.h"
 #include "io/WadFileSystem.h"
 #include "io/ZipFileSystem.h"
 #include "mdl/GameConfig.h"
@@ -141,6 +142,14 @@ Result<std::unique_ptr<io::FileSystem>> createImageFileSystem(
            | kdl::transform(
              [](auto fs) { return std::unique_ptr<io::FileSystem>{std::move(fs)}; });
   }
+  else if (kdl::ci::str_is_equal(packageFormat, "txl"))
+  {
+    return io::Disk::openFile(path) | kdl::and_then([](auto file) {
+             return io::createImageFileSystem<io::TxlFileSystem>(std::move(file));
+           })
+           | kdl::transform(
+             [](auto fs) { return std::unique_ptr<io::FileSystem>{std::move(fs)}; });
+  }
   return Error{"Unknown package format: " + packageFormat};
 }
 } // namespace
@@ -173,7 +182,16 @@ void GameFileSystem::addFileSystemPackages(
                             | kdl::transform([&](auto fs) {
                                 logger.info()
                                   << "Adding file system package " << packagePath;
-                                mount("", std::move(fs));
+                                if (packagePath.extension() == ".txl")
+                                {
+                                  mount(
+                                    config.materialConfig.root / packagePath,
+                                    std::move(fs));
+                                }
+                                else
+                                {
+                                  mount("", std::move(fs));
+                                }
                               });
                    })
                  | kdl::fold;
