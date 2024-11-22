@@ -2437,7 +2437,7 @@ void MapFrame::triggerAutosave()
 void MapFrame::triggerProcessResources()
 {
   auto document = kdl::mem_lock(m_document);
-  document->processResourcesAsync(mdl::ProcessContext{
+  document->processResourcesSync(mdl::ProcessContext{
     true, [&](const auto&, const auto& error) { logger().error() << error; }});
 }
 
