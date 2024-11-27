@@ -21,6 +21,7 @@
 
 #include "AssimpLoader.h"
 
+#include "Act2Ms3d.h"
 #include "Logger.h"
 #include "ReaderException.h"
 #include "io/File.h"
@@ -28,6 +29,7 @@
 #include "io/MaterialUtils.h"
 #include "io/PathInfo.h"
 #include "io/ReadFreeImageTexture.h"
+#include "io/ReadGeBmpTexture.h"
 #include "io/ResourceUtils.h"
 #include "mdl/BrushFaceAttributes.h"
 #include "mdl/EntityModel.h"
@@ -280,6 +282,73 @@ std::vector<mdl::Texture> loadTexturesForMaterial(
   {
     logger.error(fmt::format(
       "No diffuse textures found for material {} of model '{}', loading fallback texture",
+      materialIndex,
+      modelPath.string()));
+
+    textures.push_back(loadFallbackOrDefaultTexture(fs, logger));
+  }
+
+  return textures;
+}
+
+geBitmap* geBody_GetMaterialByName(const geBody* body, const std::string& materialName)
+{
+  int numMaterials = geBody_GetMaterialCount(body);
+  for (int j = 0; j < numMaterials; j++)
+  {
+    const char* currentMaterialName;
+    geBitmap* bitmap;
+    geFloat red, green, blue;
+    geBody_GetMaterial(body, j, &currentMaterialName, &bitmap, &red, &green, &blue);
+
+    if (materialName == currentMaterialName)
+    {
+      return bitmap;
+    }
+  }
+
+  return nullptr;
+}
+
+std::vector<mdl::Texture> loadGenesisTexturesForMaterial(
+  const aiScene& scene,
+  const size_t materialIndex,
+  const std::filesystem::path& modelPath,
+  const FileSystem& fs,
+  geActor_Def* actorDef,
+  Logger& logger)
+{
+  auto textures = std::vector<mdl::Texture>{};
+
+  const auto textureCount =
+    scene.mMaterials[materialIndex]->GetTextureCount(aiTextureType_DIFFUSE);
+
+  // Does Genesis have other textures than the diffuse one, per mesh? Maybe we can
+  // associate bump/normal maps in the MS3D format but TB can't render them anyway.
+  if (textureCount > 0)
+  {
+    // load up every diffuse texture
+    for (unsigned int ti = 0; ti < textureCount; ++ti)
+    {
+      auto path = aiString{};
+      scene.mMaterials[materialIndex]->GetTexture(aiTextureType_DIFFUSE, ti, &path);
+      const auto texturePath = std::filesystem::path{path.C_Str()}.stem();
+
+      auto* body = geActor_GetBody(actorDef);
+      auto* bitmap = geBody_GetMaterialByName(body, texturePath.string());
+
+      // Load fallback if material has a name, but no texture image loaded
+      if (!bitmap)
+        textures.push_back(loadFallbackOrDefaultTexture(fs, logger));
+      else
+        textures.push_back(createTextureFromGeBitmap(bitmap).value());
+    }
+  }
+  else
+  {
+    logger.error(fmt::format(
+      "No diffuse textures found for material {} of model '{}', loading fallback "
+      "texture",
       materialIndex,
       modelPath.string()));
 
@@ -803,6 +872,7 @@ bool AssimpLoader::canParse(const std::filesystem::path& path)
     ".ac3d", ".stl",      ".dxf",          ".irrmesh",  ".irr",       ".off",
     ".obj", // .obj files will only be parsed by Assimp if the neverball importer isn't enabled
     ".mdl", // 3D GameStudio Model. It requires a palette file to load.
+    ".act", // Genesis3D model format converted to .ms3d
     ".hmp",  ".mesh.xml", ".skeleton.xml", ".material", ".ogex",      ".ms3d", ".lxo",
     ".csm",  ".ply",      ".cob",          ".scn",      ".xgl"};
   // clang-format on
@@ -813,6 +883,7 @@ bool AssimpLoader::canParse(const std::filesystem::path& path)
 
 Result<mdl::EntityModelData> AssimpLoader::load(tb::Logger& logger)
 {
+  geActor_Def* actorDef = nullptr;
   try
   {
     constexpr auto assimpFlags = aiProcess_Triangulate | aiProcess_JoinIdenticalVertices
@@ -825,7 +896,64 @@ Result<mdl::EntityModelData> AssimpLoader::load(tb::Logger& logger)
     auto importer = Assimp::Importer{};
     importer.SetIOHandler(new AssimpIOSystem{m_fs});
 
-    const auto* scene = importer.ReadFile(modelPath, assimpFlags);
+    const aiScene* scene = nullptr;
+
+    // Convert Genesis3D model mesh to .ms3d until we make our own importer for Assimp
+    if (m_path.extension() == ".act")
+    {
+      auto file = m_fs.openFile(modelPath).value();
+      if (!file)
+      {
+        return Error{fmt::format("Failed to open file '{}'", modelPath)};
+      }
+
+      auto actorSize = file->reader().size();
+      std::vector<char> actorData(actorSize);
+      file->reader().read(actorData.data(), actorSize);
+
+      geVFile_MemoryContext context{actorData.data(), static_cast<int32_t>(actorSize)};
+      auto* actorFile = geVFile_OpenNewSystem(
+        nullptr, GE_VFILE_TYPE_MEMORY, nullptr, &context, GE_VFILE_OPEN_READONLY);
+      if (!actorFile)
+      {
+        return Error{
+          fmt::format("Failed to open actor file in memory for '{}'", modelPath)};
+      }
+
+      actorDef = geActor_DefCreateFromFile(actorFile);
+      if (!actorDef)
+      {
+        geVFile_Close(actorFile);
+        return Error{
+          fmt::format("Failed to create definition from actor file for '{}'", modelPath)};
+      }
+
+      geVFile_Close(actorFile);
+
+      auto* body = geActor_GetBody(actorDef);
+      if (!body)
+      {
+        return Error{
+          fmt::format("Failed to create body from actor definition for '{}'", modelPath)};
+      }
+
+      ms3d_model_t model{
+        static_cast<size_t>(body->XSkinVertexCount),
+        static_cast<size_t>(body->SkinFaces[0].FaceCount),
+        static_cast<size_t>(body->MaterialCount),
+        static_cast<size_t>(body->BoneCount)};
+
+      act2ms3d::ConvertGeBodyToMS3D(body, model);
+
+      std::vector<char> buffer;
+      act2ms3d::WriteMS3DToBuffer(buffer, model);
+      scene = importer.ReadFileFromMemory(buffer.data(), buffer.size(), assimpFlags);
+    }
+    else
+    {
+      scene = importer.ReadFile(modelPath, assimpFlags);
+    }
+
     if (!scene)
     {
       return Error{fmt::format(
@@ -851,16 +979,25 @@ Result<mdl::EntityModelData> AssimpLoader::load(tb::Logger& logger)
 
       // an assimp mesh will only ever have one material, but a material can have
       // multiple alternatives (this is how assimp handles skins)
-
       // load skins for this surface
+
+      // Load Genesis3D textures from the actor definition as .ms3d format
+      // doesn't support embedded textures
       auto textures =
-        loadTexturesForMaterial(*scene, mesh->mMaterialIndex, m_path, m_fs, logger);
+        m_path.extension() == ".act"
+          ? loadGenesisTexturesForMaterial(
+              *scene, mesh->mMaterialIndex, m_path, m_fs, actorDef, logger)
+          : loadTexturesForMaterial(*scene, mesh->mMaterialIndex, m_path, m_fs, logger);
+
       auto materials = kdl::vec_transform(std::move(textures), [](auto texture) {
         auto textureResource = createTextureResource(std::move(texture));
         return mdl::Material{"", std::move(textureResource)};
       });
       surface.setSkins(std::move(materials));
     }
+
+    if (actorDef)
+      geActor_DefDestroy(&actorDef);
 
     return std::views::iota(0u, numSequences) | std::views::transform([&](const auto i) {
              return loadSceneFrame(*scene, i, data, modelPath);
@@ -869,6 +1006,9 @@ Result<mdl::EntityModelData> AssimpLoader::load(tb::Logger& logger)
   }
   catch (const ParserException& e)
   {
+    if (actorDef)
+      geActor_DefDestroy(&actorDef);
+
     return Error{e.what()};
   }
 }
