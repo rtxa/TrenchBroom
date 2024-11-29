@@ -366,7 +366,7 @@ mdl::BrushFaceAttributes parseFaceAttribsDefaults(
     trace,
     R"([
       {},
-      {'materialName': 'String', 'offset': 'Array', 'scale': 'Array', 'rotation': 'Number', 'surfaceContents': 'Array', 'surfaceFlags': 'Array', 'surfaceValue': 'Number', 'color': 'String'}
+      {'materialName': 'String', 'offset': 'Array', 'scale': 'Array', 'rotation': 'Number', 'surfaceContents': 'Array', 'surfaceFlags': 'Array', 'surfaceValue': 'Number', 'color': 'String', 'lightmap': 'Number'}
     ])");
 
   if (value["materialName"] != el::Value::Null)
@@ -414,6 +414,11 @@ mdl::BrushFaceAttributes parseFaceAttribsDefaults(
   if (value["color"] != el::Value::Null)
   {
     defaults.setColor(Color::parse(value["color"].stringValue()).value_or(Color{}));
+  }
+  if (value["lightmap"] != el::Value::Null)
+  {
+    defaults.setXLightMapScale(float(value["lightmap"].numberValue()));
+    defaults.setYLightMapScale(float(value["lightmap"].numberValue()));
   }
 
   return defaults;
