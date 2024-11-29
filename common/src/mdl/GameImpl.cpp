@@ -405,7 +405,7 @@ Result<std::vector<std::string>> GameImpl::availableMods() const
     return Result<std::vector<std::string>>{std::vector<std::string>{}};
   }
 
-  const auto& defaultMod = m_config.fileSystemConfig.searchPath.filename().string();
+  const auto& defaultMod = m_config.fileSystemConfig.searchPath[0].filename().string();
   const auto fs = io::DiskFileSystem{m_gamePath};
   return fs.find(
            "",
@@ -434,7 +434,7 @@ std::vector<std::string> GameImpl::extractEnabledMods(const Entity& entity) cons
 
 std::string GameImpl::defaultMod() const
 {
-  return m_config.fileSystemConfig.searchPath.string();
+  return m_config.fileSystemConfig.searchPath[0].string();
 }
 
 void GameImpl::initializeFileSystem(Logger& logger)
