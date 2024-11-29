@@ -96,9 +96,11 @@ void GameFileSystem::addGameFileSystems(
   const std::vector<std::filesystem::path>& additionalSearchPaths,
   Logger& logger)
 {
-  const auto& fileSystemConfig = config.fileSystemConfig;
-  addFileSystemPath(gamePath / fileSystemConfig.searchPath, logger);
-  addFileSystemPackages(config, gamePath / fileSystemConfig.searchPath, logger);
+  for (const auto& searchPath : config.fileSystemConfig.searchPath)
+  {
+    addFileSystemPath(gamePath / searchPath, logger);
+    addFileSystemPackages(config, gamePath / searchPath, logger);
+  }
 
   for (const auto& searchPath : additionalSearchPaths)
   {

@@ -609,10 +609,20 @@ mdl::FileSystemConfig parseFileSystemConfig(
       {}
     ])");
 
+  std::vector<std::filesystem::path> paths;
+  for (const auto& s : kdl::str_split(value["searchpath"].stringValue(), ";"))
+  {
+    paths.push_back(std::filesystem::path{s});
+  }
+
+  // Fallback to empty search path so functions don't crash
+  if (paths.empty())
+  {
+    paths.push_back(std::filesystem::path{});
+  }
+
   return mdl::FileSystemConfig{
-    std::filesystem::path{value["searchpath"].stringValue()},
-    parsePackageFormatConfig(value["packageformat"], trace),
-  };
+    std::move(paths), parsePackageFormatConfig(value["packageformat"], trace)};
 }
 
 std::vector<mdl::MapFormatConfig> parseMapFormatConfigs(
