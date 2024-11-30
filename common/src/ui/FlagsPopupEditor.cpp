@@ -90,6 +90,11 @@ FlagsPopupEditor::FlagsPopupEditor(
   connect(m_editor, &FlagsEditor::flagChanged, this, &FlagsPopupEditor::flagChanged);
 }
 
+void FlagsPopupEditor::setDisabledFlags(int disabledFlags)
+{
+  m_editor->setDisabledFlags(disabledFlags);
+}
+
 void FlagsPopupEditor::setFlags(const QStringList& labels, const QStringList& tooltips)
 {
   m_editor->setFlags(labels, tooltips);

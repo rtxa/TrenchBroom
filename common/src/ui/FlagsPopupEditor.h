@@ -47,6 +47,7 @@ public:
     bool showFlagsText = true,
     QWidget* parent = nullptr);
 
+  void setDisabledFlags(int disabledFlags);
   void setFlags(const QStringList& labels, const QStringList& tooltips = QStringList());
   void setFlags(
     const QList<int>& values,

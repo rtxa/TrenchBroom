@@ -107,6 +107,21 @@ void FlagsEditor::setFlags(
   setLayout(layout);
 }
 
+void FlagsEditor::setDisabledFlags(int disabledFlags)
+{
+  for (size_t i = 0; i < m_checkBoxes.size(); ++i)
+  {
+    if (m_values[i] & disabledFlags)
+    {
+      m_checkBoxes[i]->setEnabled(false);
+    }
+    else
+    {
+      m_checkBoxes[i]->setEnabled(true);
+    }
+  }
+}
+
 void FlagsEditor::setFlagValue(const int on, const int mixed)
 {
   for (size_t i = 0; i < m_checkBoxes.size(); ++i)

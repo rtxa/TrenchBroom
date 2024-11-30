@@ -155,6 +155,50 @@ void FaceAttribsEditor::yScaleChanged(const double value)
   }
 }
 
+namespace
+{
+auto setMutuallyExclusiveFlags(int flags, int value, int exclusiveFlags) -> int
+{
+  if (value & exclusiveFlags)
+  {
+    flags &= ~exclusiveFlags;
+    flags |= value & exclusiveFlags;
+  }
+  return flags;
+}
+
+bool isFlagSet(int value, int flags)
+{
+  return (value & flags) != 0;
+}
+
+void setBitFlag(int& flags, int bit)
+{
+  flags |= bit;
+}
+
+void clearBitFlag(int& flags, int bit)
+{
+  flags &= ~bit;
+}
+
+enum FaceFlags : int
+{
+  Mirror = (1 << 0),      // This face is a mirror face
+  FullBright = (1 << 1),  // This face is fully bright
+  Sky = (1 << 2),         // This face is a sky portal
+  Light = (1 << 3),       // This face emits light
+  Transparent = (1 << 4), // Hint to the engine that's not solid
+  Gouraud = (1 << 5),     // This face is gouraud shaded
+  Flat = (1 << 6),        // This face is flat shaded
+  NoLightMap = (1 << 15)  // This face does not have a lightmap
+};
+
+// Full Bright, Gouraud and Flat are mutually exclusive
+constexpr auto FaceLightFlags =
+  FaceFlags::Gouraud | FaceFlags::Flat | FaceFlags::FullBright;
+} // namespace
+
 void FaceAttribsEditor::surfaceFlagChanged(
   const size_t /* index */, const int value, const int setFlag, const int /* mixedFlag */)
 {
@@ -167,7 +211,15 @@ void FaceAttribsEditor::surfaceFlagChanged(
   auto request = mdl::ChangeBrushFaceAttributesRequest{};
   if (setFlag & value)
   {
-    request.setSurfaceFlags(value);
+    if (isFlagSet(value, FaceLightFlags) && hasGenesisAttribs())
+    {
+      request.replaceSurfaceFlags(
+        setMutuallyExclusiveFlags(setFlag, value, FaceLightFlags));
+    }
+    else
+    {
+      request.setSurfaceFlags(value);
+    }
   }
   else
   {
@@ -179,6 +231,97 @@ void FaceAttribsEditor::surfaceFlagChanged(
   }
 }
 
+namespace
+{
+enum BrushFlags : int
+{
+  Solid = (1 << 0),       // Solid (Visible)
+  Window = (1 << 1),      // Window (Visible)
+  Empty = (1 << 2),       // Empty but Visible (water, lava, etc...)
+  Translucent = (1 << 3), // Vis will see through it
+  Wavy = (1 << 4),        // Wavy (Visible)
+  Detail = (1 << 5),      // Won't be included in vis oclusion
+  Clip = (1 << 6),        // Structural but not visible
+  Hint = (1 << 7),        // Primary splitter (Non-Visible)
+  Area = (1 << 8),        // Area seperator leaf (Non-Visible)
+  Flocking = (1 << 9),    // flocking flag.  Not really a contents type
+  Sheet = (1 << 10)       // flocking flag.  Not really a contents type
+                          // flags 11 through 15 are reserved for future expansion.
+                          // flags 16 through 31 are user flags.
+};
+
+// Solid, Windows, Empty, Hint and Clip are mutually exclusive
+constexpr auto BrushTypeFlags = BrushFlags::Solid | BrushFlags::Window | BrushFlags::Empty
+                                | BrushFlags::Hint | BrushFlags::Clip;
+
+struct FlagUpdate
+{
+  int checkedFlags;   // flags to set
+  int uncheckedFlags; // flags to unset
+  int disabledFlags;  // flags that can't be set/unset
+};
+
+FlagUpdate getFlagsFromBrushType(int flags)
+{
+  using BF = BrushFlags;
+  auto exclusiveFlags = BrushTypeFlags & ~flags;
+  // clang-format off
+  if (flags & BF::Empty)
+  {
+    return {
+      BF::Empty, 
+      exclusiveFlags | BF::Area | BF::Detail, 
+      BF::Area};
+  }
+  else if (flags & BF::Solid)
+  {
+    return {
+      BF::Solid, 
+      exclusiveFlags | BF::Wavy, 
+      BF::Wavy};
+  }
+  else if (flags & BF::Window)
+  {
+    return {
+      BF::Window | BF::Detail,
+      exclusiveFlags | BF::Wavy | BF::Area | BF::Sheet,
+      BF::Detail | BF::Wavy | BF::Area | BF::Sheet};
+  }
+  else if (flags & BF::Clip)
+  {
+    return {
+      BF::Clip,
+      exclusiveFlags | BF::Detail | BF::Wavy | BF::Area | BF::Sheet,
+      BF::Detail | BF::Wavy | BF::Area | BF::Sheet};
+  }
+  else if (flags & BF::Hint)
+  {
+    return {
+      BF::Hint,
+      exclusiveFlags | BF::Detail | BF::Wavy | BF::Area | BF::Sheet,
+      BF::Detail | BF::Wavy | BF::Area | BF::Sheet};
+  }
+  else
+  {
+    assert(false);
+  }
+  // clang-format on
+  return {0, 0, 0};
+}
+
+bool isBrushType(int type)
+{
+  return type & BrushTypeFlags;
+}
+
+int UpdateFlags(int flags, int checkedFlags, int uncheckedFlags)
+{
+  setBitFlag(flags, checkedFlags);
+  clearBitFlag(flags, uncheckedFlags);
+  return flags;
+}
+} // namespace
+
 void FaceAttribsEditor::contentFlagChanged(
   const size_t /* index */, const int value, const int setFlag, const int /* mixedFlag */)
 {
@@ -189,13 +332,53 @@ void FaceAttribsEditor::contentFlagChanged(
   }
 
   auto request = mdl::ChangeBrushFaceAttributesRequest{};
-  if (setFlag & value)
+
+  auto [checkedFlags, uncheckedFlags, disabledFlags] =
+    isBrushType(value) ? getFlagsFromBrushType(value) : getFlagsFromBrushType(setFlag);
+
+  if (hasGenesisAttribs())
   {
-    request.setContentFlags(value);
+    if (setFlag & value)
+    {
+      if (isBrushType(value))
+      {
+        request.replaceContentFlags(UpdateFlags(setFlag, checkedFlags, uncheckedFlags));
+      }
+      else if (isFlagSet(value, disabledFlags))
+      {
+        // can't set disabled flags
+      }
+      else
+      {
+        request.setContentFlags(value);
+      }
+    }
+    else
+    {
+      if (isBrushType(value))
+      {
+        request.replaceContentFlags(UpdateFlags(setFlag, checkedFlags, uncheckedFlags));
+      }
+      else if (isFlagSet(value, disabledFlags))
+      {
+        // can't unset disabled flags
+      }
+      else
+      {
+        request.unsetContentFlags(value);
+      }
+    }
   }
-  else
+  else // Default flags
   {
-    request.unsetContentFlags(value);
+    if (setFlag & value)
+    {
+      request.setContentFlags(value);
+    }
+    else
+    {
+      request.unsetContentFlags(value);
+    }
   }
   if (!document->setFaceAttributes(request))
   {
@@ -1081,6 +1264,22 @@ void FaceAttribsEditor::updateControls()
 
     m_surfaceFlagsEditor->setFlagValue(setSurfaceFlags, mixedSurfaceFlags);
     m_contentFlagsEditor->setFlagValue(setSurfaceContents, mixedSurfaceContents);
+
+    if (hasGenesisAttribs())
+    {
+      // enable/disable checkboxes based on brush type
+      auto [checkedFlags, uncheckedFlags, disabledFlags] =
+        getFlagsFromBrushType(setSurfaceContents);
+      if (mixedSurfaceContents)
+      {
+        // only allow to set brush types on mixed flags
+        m_contentFlagsEditor->setDisabledFlags(~BrushTypeFlags);
+      }
+      else
+      {
+        m_contentFlagsEditor->setDisabledFlags(disabledFlags);
+      }
+    }
 
 
     m_surfaceValueUnsetButton->setEnabled(hasSurfaceValue);

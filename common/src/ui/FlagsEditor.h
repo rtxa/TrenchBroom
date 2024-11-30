@@ -49,6 +49,7 @@ public:
     const QStringList& labels,
     const QStringList& tooltips = QStringList());
   void setFlagValue(int set, int mixed = 0);
+  void setDisabledFlags(int disabledFlags);
 
   size_t getNumFlags() const;
   bool isFlagSet(size_t index) const;
