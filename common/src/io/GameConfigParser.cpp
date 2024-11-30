@@ -437,7 +437,7 @@ void parseFlag(
       trace,
       R"([
         {},
-        {'name': 'String', 'description': 'String', 'unused': 'Boolean'}
+        {'name': 'String', 'description': 'String', 'unused': 'Boolean', 'index': 'Number'}
       ])");
   }
   else
@@ -447,14 +447,13 @@ void parseFlag(
       trace,
       R"([
       {'name': 'String'},
-      {'description': 'String', 'unused': 'Boolean'}
+      {'description': 'String', 'unused': 'Boolean', 'index': 'Number'}
       ])");
-
+    auto hasCustomIndex = value["index"] != el::Value::Null;
     flags.push_back(mdl::FlagConfig{
       value["name"].stringValue(),
       value["description"].stringValue(),
-      1 << index,
-    });
+      1 << (hasCustomIndex ? int(value["index"].numberValue()) : index)});
   }
 }
 
