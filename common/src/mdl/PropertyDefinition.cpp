@@ -114,6 +114,10 @@ std::string PropertyDefinition::defaultValue(const PropertyDefinition& definitio
   case PropertyDefinitionType::TargetSourceProperty:
   case PropertyDefinitionType::TargetDestinationProperty:
     return "";
+  case PropertyDefinitionType::Angles3dProperty: {
+    const auto& stringDef = static_cast<const Angles3dPropertyDefinition&>(definition);
+    return stringDef.hasDefaultValue() ? stringDef.defaultValue() : "";
+  }
     switchDefault();
   }
 }
@@ -165,6 +169,36 @@ std::unique_ptr<PropertyDefinition> StringPropertyDefinition::doClone(
   bool readOnly) const
 {
   return std::make_unique<StringPropertyDefinition>(
+    std::move(key),
+    std::move(shortDescription),
+    std::move(longDescription),
+    readOnly,
+    m_defaultValue);
+}
+
+Angles3dPropertyDefinition::Angles3dPropertyDefinition(
+  std::string key,
+  std::string shortDescription,
+  std::string longDescription,
+  const bool readOnly,
+  std::optional<std::string> defaultValue)
+  : PropertyDefinitionWithDefaultValue{
+      std::move(key),
+      PropertyDefinitionType::Angles3dProperty,
+      std::move(shortDescription),
+      std::move(longDescription),
+      readOnly,
+      std::move(defaultValue)}
+{
+}
+
+std::unique_ptr<PropertyDefinition> Angles3dPropertyDefinition::doClone(
+  std::string key,
+  std::string shortDescription,
+  std::string longDescription,
+  bool readOnly) const
+{
+  return std::make_unique<Angles3dPropertyDefinition>(
     std::move(key),
     std::move(shortDescription),
     std::move(longDescription),

@@ -40,6 +40,7 @@ enum class PropertyDefinitionType
   IntegerProperty,
   FloatProperty,
   ChoiceProperty,
+  Angles3dProperty,
   FlagsProperty
 };
 
@@ -121,6 +122,24 @@ class StringPropertyDefinition : public PropertyDefinitionWithDefaultValue<std::
 {
 public:
   StringPropertyDefinition(
+    std::string key,
+    std::string shortDescription,
+    std::string longDescription,
+    bool readOnly,
+    std::optional<std::string> defaultValue = std::nullopt);
+
+private:
+  std::unique_ptr<PropertyDefinition> doClone(
+    std::string key,
+    std::string shortDescription,
+    std::string longDescription,
+    bool readOnly) const override;
+};
+
+class Angles3dPropertyDefinition : public PropertyDefinitionWithDefaultValue<std::string>
+{
+public:
+  Angles3dPropertyDefinition(
     std::string key,
     std::string shortDescription,
     std::string longDescription,

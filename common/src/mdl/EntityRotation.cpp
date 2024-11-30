@@ -24,6 +24,7 @@
 #include "mdl/EntityDefinition.h"
 #include "mdl/EntityModel.h"
 #include "mdl/EntityNode.h"
+#include "mdl/PropertyDefinition.h"
 
 #include "kdl/reflection_impl.h"
 #include "kdl/string_compare.h"
@@ -187,6 +188,19 @@ EntityRotationInfo entityRotationInfo(const Entity& entity)
         {
           // TODO: this only makes sense for Quake
           usage = EntityRotationUsage::BlockRotation;
+        }
+
+        // if the entity property is type angles3d, use Euler angles
+        if (entity.definition() != nullptr)
+        {
+          for (const auto& property : entity.definition()->propertyDefinitions())
+          {
+            auto prop = property.get();
+            if (prop->type() == PropertyDefinitionType::Angles3dProperty)
+            {
+              return EntityRotationInfo{eulerType, prop->key(), usage};
+            }
+          }
         }
 
         std::tie(propertyKey, type) =

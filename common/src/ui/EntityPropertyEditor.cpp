@@ -164,6 +164,7 @@ QString EntityPropertyEditor::optionDescriptions(
   case mdl::PropertyDefinitionType::FloatProperty:
   case mdl::PropertyDefinitionType::TargetSourceProperty:
   case mdl::PropertyDefinitionType::TargetDestinationProperty:
+  case mdl::PropertyDefinitionType::Angles3dProperty:
     return {};
     switchDefault();
   }

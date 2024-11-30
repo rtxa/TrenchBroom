@@ -418,6 +418,23 @@ std::unique_ptr<mdl::PropertyDefinition> parseStringPropertyDefinition(
   return parsePropertyDefinition(element, factory, status);
 }
 
+std::unique_ptr<mdl::PropertyDefinition> parseAngles3dPropertyDefinition(
+  const tinyxml2::XMLElement& element, ParserStatus& status)
+{
+  auto factory = [&](std::string name, std::string shortDesc, std::string longDesc) {
+    auto defaultValue = hasAttribute(element, "value")
+                          ? std::optional(parseString(element, "value"))
+                          : std::nullopt;
+    return std::make_unique<mdl::Angles3dPropertyDefinition>(
+      std::move(name),
+      std::move(shortDesc),
+      std::move(longDesc),
+      false,
+      std::move(defaultValue));
+  };
+  return parsePropertyDefinition(element, factory, status);
+}
+
 std::unique_ptr<mdl::PropertyDefinition> parseUnknownPropertyDefinition(
   const tinyxml2::XMLElement& element, ParserStatus& status)
 {
@@ -491,6 +508,10 @@ std::unique_ptr<mdl::PropertyDefinition> parsePropertyDefinition(
   if (getName(element) == "color")
   {
     return parseUnknownPropertyDefinition(element, status);
+  }
+  if (getName(element) == "angles3d")
+  {
+    return parseAngles3dPropertyDefinition(element, status);
   }
 
   for (const auto& propertyDeclaration : propertyDeclarations)

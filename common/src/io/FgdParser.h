@@ -141,6 +141,8 @@ private:
     ParserStatus& status, std::string propertyKey);
   std::unique_ptr<mdl::PropertyDefinition> parseStringPropertyDefinition(
     ParserStatus& status, std::string propertyKey);
+  std::unique_ptr<mdl::PropertyDefinition> parseAngles3dPropertyDefinition(
+    ParserStatus& status, std::string propertyKey);
   std::unique_ptr<mdl::PropertyDefinition> parseIntegerPropertyDefinition(
     ParserStatus& status, std::string propertyKey);
   std::unique_ptr<mdl::PropertyDefinition> parseFloatPropertyDefinition(

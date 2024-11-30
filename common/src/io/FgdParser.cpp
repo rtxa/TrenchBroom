@@ -656,6 +656,10 @@ std::unique_ptr<mdl::PropertyDefinition> FgdParser::parsePropertyDefinition(
   {
     return parseFlagsPropertyDefinition(status, std::move(propertyKey));
   }
+  if (kdl::ci::str_is_equal(typeName, "angles3d"))
+  {
+    return parseAngles3dPropertyDefinition(status, std::move(propertyKey));
+  }
 
   status.debug(
     location,
@@ -702,6 +706,21 @@ std::unique_ptr<mdl::PropertyDefinition> FgdParser::parseStringPropertyDefinitio
   auto defaultValue = parseDefaultStringValue(status);
   auto longDescription = parsePropertyDescription(status);
   return std::make_unique<mdl::StringPropertyDefinition>(
+    std::move(propertyKey),
+    std::move(shortDescription),
+    std::move(longDescription),
+    readOnly,
+    std::move(defaultValue));
+}
+
+std::unique_ptr<mdl::PropertyDefinition> FgdParser::parseAngles3dPropertyDefinition(
+  ParserStatus& status, std::string propertyKey)
+{
+  const auto readOnly = parseReadOnlyFlag(status);
+  auto shortDescription = parsePropertyDescription(status);
+  auto defaultValue = parseDefaultStringValue(status);
+  auto longDescription = parsePropertyDescription(status);
+  return std::make_unique<mdl::Angles3dPropertyDefinition>(
     std::move(propertyKey),
     std::move(shortDescription),
     std::move(longDescription),
